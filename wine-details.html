@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wine Details - Gran Caffè L'Aquila</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-light: #F4CF67;
+            --dark-gold: #B8860B;
+            --black: #0A0A0A;
+            --charcoal: #1A1A1A;
+            --ivory: #F5F5F0;
+            --cream: #F8F8F0;
+            --transition-slow: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-family: 'Cormorant', serif;
+            background: var(--black);
+            color: var(--ivory);
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            touch-action: pan-y; /* Enable vertical scrolling, prevent horizontal */
+        }
+
+        .luxury-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--charcoal) 0%, var(--black) 100%);
+        }
+
+        /* Top Bar */
+        .wine-details-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: rgba(26, 26, 26, 0.95);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            gap: 1rem;
+        }
+        
+        .wine-details-logo {
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .wine-details-logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        
+        .wine-details-logo:hover {
+            transform: scale(1.05);
+        }
+        
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .wine-details-logo {
+                width: 56px !important;
+                height: 56px !important;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .wine-details-top-bar {
+                padding: 10px 15px;
+            }
+            
+            .wine-details-top-title {
+                font-size: 14px;
+            }
+        }
+
+        .wine-details-back-btn {
+            color: var(--gold);
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .wine-details-back-btn:hover {
+            color: var(--gold-light);
+        }
+
+        .wine-details-top-title {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: var(--gold);
+            flex: 1;
+            text-align: center;
+        }
+
+        .wine-details-share-btn {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .wine-details-share-btn:hover {
+            color: var(--gold-light);
+        }
+
+        /* Main Content */
+        .wine-details-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0;
+            width: 100%;
+        }
+
+        .wine-details-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .wine-details-container::-webkit-scrollbar-track {
+            background: rgba(245, 245, 240, 0.05);
+        }
+
+        .wine-details-container::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 3px;
+        }
+
+        .wine-details-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            gap: 0;
+        }
+
+        /* Wine Details Content - Two Column Layout */
+        @media (min-width: 768px) {
+            .wine-details-content {
+                display: grid;
+                grid-template-columns: 0.4fr 0.6fr;
+                gap: 2.5rem;
+                align-items: start;
+            }
+        }
+
+        .wine-image-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            align-items: center;
+            height: 100%;
+            position: relative;
+        }
+
+        .wine-image {
+            width: 100%;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            position: relative;
+            overflow: visible;
+            margin: 1.5rem 0;
+        }
+
+        .wine-bottle {
+            font-size: 120px;
+            color: rgba(212, 175, 55, 0.4);
+        }
+
+        #wineBottleImage {
+            max-width: 70%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+        }
+        
+        #wineBottleIcon {
+            display: block;
+        }
+        
+        #wineBottleImage[style*="display: block"] ~ #wineBottleIcon,
+        #wineBottleImage:not([style*="display: none"]) ~ #wineBottleIcon {
+            display: none !important;
+        }
+
+        .wine-information {
+            width: 100%;
+        }
+
+        /* Popup per Information e Producer */
+        .info-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .info-popup-overlay.active {
+            display: flex;
+        }
+
+        .info-popup-content {
+            background: linear-gradient(135deg, var(--charcoal) 0%, var(--black) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            padding: 0;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+                position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .info-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+                padding: 1.5rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, var(--charcoal) 0%, var(--black) 100%);
+            z-index: 10;
+        }
+
+        .info-popup-title {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .info-popup-close {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .info-popup-close:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .info-popup-body {
+            padding: 1.5rem;
+        }
+
+        .info-popup-trigger {
+            cursor: pointer;
+            color: var(--gold);
+            text-decoration: underline;
+            text-decoration-color: rgba(212, 175, 55, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .info-popup-trigger:hover {
+            text-decoration-color: var(--gold);
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .info-item {
+            background: rgba(245, 245, 240, 0.05);
+            padding: 1rem 1.25rem;
+            border-left: 3px solid var(--gold);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .info-item:hover {
+            background: rgba(245, 245, 240, 0.08);
+            transform: translateX(4px);
+        }
+
+        .info-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .info-icon {
+            color: var(--gold);
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--gold);
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-family: 'Cinzel', serif;
+        }
+
+        .info-value {
+            color: var(--ivory);
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        /* Wine Info Section */
+        .wine-info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: fit-content;
+        }
+
+        .wine-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--gold-light);
+            letter-spacing: 1px;
+            line-height: 1.3;
+            margin-bottom: 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .wine-name {
+                font-size: 2.2rem;
+            }
+        }
+
+        .wine-description {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--ivory);
+            background: rgba(245, 245, 240, 0.05);
+            padding: 1rem;
+            border-left: 3px solid var(--gold);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .wine-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            font-size: 1rem;
+            padding: 1.5rem;
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            margin: 1.5rem auto;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            min-height: 2.5rem;
+        }
+
+        .meta-item:last-child {
+            border-bottom: none;
+            padding-top: 0.75rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .meta-item:last-child .meta-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .meta-label {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            min-width: 80px;
+        }
+
+        .meta-value {
+            color: var(--ivory);
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: right;
+            flex-grow: 1;
+            margin-left: 1rem;
+        }
+
+        /* Tasting Notes */
+        .tasting-notes {
+            margin-top: 1rem;
+        }
+
+        .tasting-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .tasting-note {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 0.75rem;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--ivory);
+            transition: all 0.3s;
+        }
+
+        .tasting-note:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--gold);
+        }
+
+        /* Tasting Category (for WineApp compatibility) */
+        .tasting-category {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.6) 0%, rgba(10, 10, 10, 0.85) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 1rem;
+            color: var(--ivory);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .tasting-category:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--gold);
+        }
+
+        .tasting-label {
+            font-weight: 600;
+            color: var(--gold);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Tasting Notes Container between wine name and image */
+        #tastingNotesContainer {
+            margin: 1.25rem 0 1.5rem 0;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tasting-value {
+            color: var(--ivory);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .elegant-message {
+            text-align: left;
+            padding: 1rem;
+        }
+
+        .elegant-message .tasting-label {
+            margin-bottom: 0.5rem;
+        }
+
+        .elegant-message .tasting-value {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Food Pairings */
+        .food-pairings {
+            margin-top: 1rem;
+        }
+
+        .pairing-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .pairing-item {
+            background: rgba(245, 245, 240, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 0.75rem;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--ivory);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pairing-icon {
+            font-size: 18px;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .pairing-name {
+            font-size: 0.9rem;
+            color: var(--ivory);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Producer Info */
+        .producer-info {
+            margin-top: 1rem;
+        }
+
+        .producer-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            color: var(--gold-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .producer-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--gold);
+        }
+
+        /* Share Section */
+        .share-wine-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .share-wine-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--dark-gold) 100%);
+            border: none;
+            color: var(--black);
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .share-wine-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Modal */
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .share-modal.active {
+            display: flex;
+        }
+
+        .share-modal-content {
+            background: var(--charcoal);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .share-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .share-modal-header h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 14px;
+        }
+
+        .close-share-modal {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--ivory);
+            font-size: 10px;
+        }
+
+        .share-option:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: var(--gold);
+        }
+
+        .share-option i {
+            font-size: 20px;
+            color: var(--gold);
+        }
+
+        .share-url-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .share-url-section label {
+            display: block;
+            font-size: 10px;
+            color: var(--gold);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .url-copy-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        #shareUrl {
+            flex: 1;
+            padding: 8px;
+            background: rgba(245, 245, 240, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: var(--ivory);
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .copy-url-btn {
+            padding: 8px 12px;
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--gold);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .copy-url-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        /* Footer */
+        .luxury-footer {
+            background: rgba(10, 10, 10, 0.8);
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            padding: 15px 20px;
+            flex-shrink: 0;
+            font-size: 10px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            color: var(--gold);
+        }
+
+        .footer-logo {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            letter-spacing: 1px;
+            grid-column: 1 / -1;
+        }
+
+        .footer-info p {
+            margin: 3px 0;
+            color: var(--ivory);
+        }
+
+        .footer-info i {
+            color: var(--gold);
+            width: 12px;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .social-icons a {
+            color: var(--gold);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .social-icons a:hover {
+            color: var(--gold-light);
+        }
+
+        .copyright {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: rgba(212, 175, 55, 0.5);
+            font-size: 9px;
+        }
+
+        /* ==================== DAY MODE STYLES ==================== */
+        :root[data-theme="day"] html,
+        :root[data-theme="day"] body {
+            background: #FDFBF7 !important;
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .luxury-container {
+            background: linear-gradient(135deg, #FDFBF7 0%, #F8F8F0 100%) !important;
+        }
+
+        :root[data-theme="day"] .wine-details-top-bar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-bottom: 1px solid rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .wine-details-back-btn,
+        :root[data-theme="day"] .wine-details-share-btn {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-details-back-btn:hover,
+        :root[data-theme="day"] .wine-details-share-btn:hover {
+            color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .wine-details-top-title {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-image {
+            background: rgba(245, 245, 240, 0.5) !important;
+            border: 2px solid rgba(139, 105, 20, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        :root[data-theme="day"] .wine-bottle {
+            color: rgba(139, 105, 20, 0.3) !important;
+        }
+
+        :root[data-theme="day"] .wine-name {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-description {
+            background: rgba(245, 245, 240, 0.5) !important;
+            color: #1a1a1a !important;
+            border-left: 3px solid #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .wine-meta {
+            background: transparent !important;
+            border-color: rgba(139, 105, 20, 0.3) !important;
+        }
+
+        :root[data-theme="day"] .meta-item {
+            border-bottom-color: rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .meta-label {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .meta-value {
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .meta-item {
+            border-bottom: 1px solid rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .meta-label {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .meta-value {
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .section-title {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .info-item {
+            background: rgba(245, 245, 240, 0.5) !important;
+            border-left: 3px solid #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .info-item:hover {
+            background: rgba(212, 175, 55, 0.1) !important;
+        }
+
+        :root[data-theme="day"] .info-label {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .info-value {
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .info-icon {
+            color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .tasting-note {
+            background: rgba(212, 175, 55, 0.1) !important;
+            border: 1px solid rgba(139, 105, 20, 0.3) !important;
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .tasting-note:hover {
+            background: rgba(212, 175, 55, 0.15) !important;
+            border-color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .tasting-category {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(250, 250, 245, 0.85) 100%) !important;
+            border: 1px solid rgba(139, 105, 20, 0.3) !important;
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .tasting-category:hover {
+            background: rgba(212, 175, 55, 0.15) !important;
+            border-color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .tasting-label {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .tasting-value {
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .pairing-item {
+            background: rgba(245, 245, 240, 0.5) !important;
+            border: 1px solid rgba(139, 105, 20, 0.2) !important;
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .pairing-icon {
+            color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .pairing-name {
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .producer-name {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .producer-description {
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .share-wine-section {
+            border-top: 1px solid rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .share-wine-btn {
+            background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%) !important;
+            color: #fff !important;
+        }
+
+        :root[data-theme="day"] .share-wine-btn:hover {
+            box-shadow: 0 8px 16px rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .share-modal {
+            background: rgba(0, 0, 0, 0.5) !important;
+        }
+
+        :root[data-theme="day"] .share-modal-content {
+            background: #FDFBF7 !important;
+            border: 1px solid rgba(139, 105, 20, 0.3) !important;
+        }
+
+        :root[data-theme="day"] .share-modal-header h3 {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .close-share-modal {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .share-option {
+            background: rgba(212, 175, 55, 0.1) !important;
+            border: 1px solid rgba(139, 105, 20, 0.3) !important;
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .share-option:hover {
+            background: rgba(212, 175, 55, 0.2) !important;
+            border-color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .share-option i {
+            color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .share-url-section label {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] #shareUrl {
+            background: rgba(245, 245, 240, 0.5) !important;
+            border: 1px solid rgba(139, 105, 20, 0.3) !important;
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .copy-url-btn {
+            background: rgba(212, 175, 55, 0.2) !important;
+            border: 1px solid rgba(139, 105, 20, 0.3) !important;
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .copy-url-btn:hover {
+            background: rgba(212, 175, 55, 0.3) !important;
+        }
+
+        :root[data-theme="day"] .luxury-footer {
+            background: rgba(250, 250, 245, 0.8) !important;
+            border-top: 1px solid rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .footer-content {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .footer-info p {
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .footer-info i {
+            color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .social-icons a {
+            color: #C5A059 !important;
+        }
+
+        :root[data-theme="day"] .social-icons a:hover {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .copyright {
+            color: rgba(139, 105, 20, 0.5) !important;
+        }
+
+        :root[data-theme="day"] .wine-details-container::-webkit-scrollbar-track {
+            background: rgba(245, 245, 240, 0.3) !important;
+        }
+
+        :root[data-theme="day"] .wine-details-container::-webkit-scrollbar-thumb {
+            background: rgba(139, 105, 20, 0.3) !important;
+        }
+
+        /* Day mode for popup */
+        :root[data-theme="day"] .info-popup-overlay {
+            background: rgba(0, 0, 0, 0.3) !important;
+        }
+
+        :root[data-theme="day"] .info-popup-content {
+            background: #FDFBF7 !important;
+            border: 1px solid rgba(139, 105, 20, 0.3) !important;
+        }
+
+        :root[data-theme="day"] .info-popup-header {
+            background: #FDFBF7 !important;
+            border-bottom: 1px solid rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .info-popup-title {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .info-popup-close {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .info-popup-close:hover {
+            background: rgba(197, 160, 89, 0.1) !important;
+        }
+
+        :root[data-theme="day"] .info-popup-trigger {
+            color: #8B0000 !important;
+            text-decoration-color: rgba(139, 105, 20, 0.5) !important;
+        }
+
+        :root[data-theme="day"] .info-popup-trigger:hover {
+            text-decoration-color: #C5A059 !important;
+        }
+
+        /* ==================== WINE LAB ==================== */
+        #wineLabSection {
+            --wine-lab-primary: #8B0000;
+            --wine-lab-dark: #3a1a1a;
+            --wine-lab-light-bg: var(--cream);
+            --wine-lab-rgb-primary: 139, 0, 0;
+            --wine-lab-rgb-gold: 212, 175, 55;
+            margin-top: var(--space-lg);
+            border-top: 1px solid var(--border-color);
+            padding-top: var(--space-lg);
+        }
+
+        .wine-lab-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .wine-lab-title {
+            font-family: var(--font-heading);
+            color: var(--gold);
+            font-size: var(--fs-600);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .wine-lab-toggle {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--dark-gold) 100%);
+            border: none;
+            color: var(--black);
+            font-family: var(--font-heading);
+            font-size: var(--fs-200);
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-medium);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .wine-lab-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+        }
+
+        .wine-lab-panel[hidden] {
+            display: none;
+        }
+
+        .wine-lab-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-md);
+            padding: var(--space-sm);
+            background: rgba(26, 26, 26, 0.5);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .wine-lab-controls button {
+            padding: var(--space-xs) var(--space-sm);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: var(--fs-200);
+            letter-spacing: 0.5px;
+            transition: all var(--transition-medium);
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+
+        .wine-lab-controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        .wine-lab-hidden {
+            display: none !important;
+        }
+
+        .wine-lab-edit-btn {
+            background: var(--wine-lab-primary);
+            color: var(--ivory);
+            border: 1px solid var(--wine-lab-primary);
+        }
+
+        .wine-lab-edit-btn:hover {
+            background: #9B1010;
+            border-color: #9B1010;
+        }
+
+        .wine-lab-save-btn {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--dark-gold) 100%);
+            color: var(--black);
+            border: 1px solid var(--gold);
+            display: none;
+        }
+
+        .wine-lab-save-btn:hover {
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+        }
+
+        .wine-lab-download-btn {
+            background: #2c5e19;
+            color: var(--ivory);
+            border: 1px solid #2c5e19;
+        }
+
+        .wine-lab-download-btn:hover {
+            background: #3d7a25;
+            border-color: #3d7a25;
+        }
+
+        .wine-lab-reset-btn {
+            background: rgba(107, 75, 32, 0.8);
+            color: var(--ivory);
+            border: 1px solid var(--border-color);
+        }
+
+        .wine-lab-reset-btn:hover {
+            background: rgba(107, 75, 32, 1);
+            border-color: var(--gold);
+        }
+
+        .wine-lab-indicator {
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid var(--border-color);
+            color: var(--gold);
+            font-family: var(--font-body);
+            font-size: var(--fs-200);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 8px;
+            display: none;
+            margin-bottom: var(--space-sm);
+        }
+
+        .wine-lab-indicator.active {
+            display: inline-block;
+        }
+
+        .wine-lab-card {
+            background: var(--charcoal);
+            color: var(--ivory);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            font-family: var(--font-body);
+            transition: all var(--transition-medium);
+        }
+
+        .wine-lab-card:hover {
+            box-shadow: 0 12px 40px var(--shadow-color);
+            transform: translateY(-2px);
+        }
+
+        .wine-lab-card-header {
+            background: linear-gradient(135deg, var(--wine-lab-primary), var(--wine-lab-dark));
+            color: var(--ivory);
+            padding: var(--space-md) var(--space-lg);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-xs);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .wine-lab-card-header h3 {
+            margin: 0;
+            font-family: var(--font-heading);
+            font-size: var(--fs-500);
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--ivory);
+            line-height: 1.3;
+        }
+
+        .wine-lab-type {
+            background: rgba(255, 255, 255, 0.2);
+            padding: var(--space-xxs) var(--space-sm);
+            border-radius: 6px;
+            font-family: var(--font-heading);
+            font-size: var(--fs-200);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        .wine-lab-content {
+            padding: var(--space-lg);
+            background: var(--charcoal);
+        }
+
+        .wine-lab-section {
+            position: relative;
+            background: rgba(26, 26, 26, 0.6);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: var(--space-md);
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+            transition: all var(--transition-medium);
+        }
+
+        .wine-lab-section:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+            border-color: var(--gold);
+            background: rgba(26, 26, 26, 0.8);
+        }
+
+        .wine-lab-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .wine-lab-section-body {
+            position: relative;
+            z-index: 2;
+            padding: var(--space-md);
+        }
+
+        .wine-lab-logo-bg {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .wine-lab-logo-bg img {
+            width: 220px;
+            height: 220px;
+            object-fit: contain;
+            filter: grayscale(50%);
+        }
+
+        .wine-lab-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .wine-lab-info-item {
+            display: flex;
+            gap: var(--space-xs);
+            font-size: var(--fs-300);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            color: var(--ivory);
+        }
+
+        .wine-lab-info-item strong {
+            min-width: 110px;
+            color: var(--wine-lab-primary);
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: var(--fs-300);
+            letter-spacing: 0.5px;
+        }
+
+        .wine-lab-summary h4 {
+            margin: var(--space-sm) 0 var(--space-xs) 0;
+            color: var(--wine-lab-primary);
+            font-family: var(--font-heading);
+            font-size: var(--fs-500);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .wine-lab-summary p {
+            font-family: var(--font-body);
+            line-height: 1.7;
+            color: var(--ivory);
+            font-size: var(--fs-300);
+            margin-bottom: var(--space-sm);
+        }
+
+        .wine-lab-chart-title {
+            text-align: center;
+            color: var(--wine-lab-primary);
+            margin: 0 0 var(--space-md) 0;
+            font-family: var(--font-heading);
+            font-size: var(--fs-600);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .wine-lab-chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        .wine-lab-chart-editor {
+            display: none;
+            background: rgba(26, 26, 26, 0.9);
+            border: 2px solid var(--wine-lab-primary);
+            border-radius: 12px;
+            padding: var(--space-md);
+            margin-top: var(--space-sm);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .wine-lab-chart-editor h4 {
+            font-family: var(--font-heading);
+            color: var(--wine-lab-primary);
+            margin-bottom: var(--space-sm);
+            font-size: var(--fs-400);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .wine-lab-chart-editor.active {
+            display: block;
+        }
+
+        .wine-lab-slider-item {
+            display: grid;
+            grid-template-columns: 90px 1fr 30px;
+            gap: var(--space-xs);
+            align-items: center;
+            padding: var(--space-xs);
+            background: rgba(26, 26, 26, 0.6);
+            border-radius: 8px;
+            margin-bottom: var(--space-xs);
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-medium);
+        }
+
+        .wine-lab-slider-item:hover {
+            border-color: var(--gold);
+            background: rgba(26, 26, 26, 0.8);
+        }
+
+        .wine-lab-slider-item:has(.wine-lab-radar-label-input) {
+            grid-template-columns: 90px 1fr 30px;
+        }
+
+        .wine-lab-slider-item span {
+            font-weight: 600;
+            color: var(--wine-lab-primary);
+            text-align: center;
+            font-family: var(--font-heading);
+            font-size: var(--fs-300);
+        }
+
+        .wine-lab-slider-item input[type="range"] {
+            width: 100%;
+            accent-color: var(--wine-lab-primary);
+        }
+
+        .wine-lab-aroma-name {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: var(--space-xxs) var(--space-xs);
+            font-family: var(--font-body);
+            font-size: var(--fs-200);
+            width: 85px;
+            background: rgba(26, 26, 26, 0.8);
+            color: var(--ivory);
+            transition: all var(--transition-medium);
+        }
+
+        .wine-lab-aroma-name:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+            background: rgba(26, 26, 26, 1);
+        }
+
+        .wine-lab-editable {
+            border-radius: 4px;
+            padding: 2px var(--space-xxs);
+            transition: all var(--transition-medium);
+            font-family: var(--font-body);
+            color: var(--ivory);
+        }
+
+        .wine-lab-editable:hover {
+            background: rgba(212, 175, 55, 0.1);
+            cursor: pointer;
+        }
+
+        .wine-lab-editable.editing {
+            background: rgba(26, 26, 26, 0.9);
+            border: 2px solid var(--gold);
+            padding: var(--space-xxs) var(--space-xs);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+            color: var(--ivory);
+        }
+
+        .wine-lab-footer {
+            background: linear-gradient(135deg, var(--wine-lab-dark) 0%, var(--charcoal) 100%);
+            color: var(--gold-light);
+            text-align: center;
+            padding: var(--space-sm);
+            font-size: var(--fs-200);
+            font-family: var(--font-body);
+            border-top: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            .wine-lab-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .wine-lab-chart-row,
+            .wine-lab-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wine-lab-controls {
+                justify-content: flex-start;
+            }
+
+            .wine-lab-content {
+                padding: var(--space-md);
+            }
+
+            .wine-lab-card-header {
+                padding: var(--space-sm) var(--space-md);
+            }
+        }
+
+        /* ==================== WINE LAB DAY MODE ==================== */
+        :root[data-theme="day"] #wineLabSection {
+            border-top-color: rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-title {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-toggle {
+            background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%) !important;
+            color: #fff !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-card {
+            background: #FDFBF7 !important;
+            border-color: rgba(139, 105, 20, 0.3) !important;
+            color: var(--charcoal) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-content {
+            background: #FDFBF7 !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-info-item {
+            color: var(--charcoal) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-summary p {
+            color: var(--charcoal) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-editable {
+            color: var(--charcoal) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-section {
+            background: var(--ivory) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-card-header {
+            background: linear-gradient(135deg, #8B0000 0%, #5a0000 100%) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-section {
+            background: var(--ivory) !important;
+            border-color: rgba(139, 105, 20, 0.2) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-section:hover {
+            border-color: var(--gold) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-content {
+            background: var(--cream) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-chart-editor {
+            background: var(--ivory) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-info-item strong {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-summary h4 {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-chart-title {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-editable {
+            color: #1a1a1a !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-editable:hover {
+            background: rgba(139, 105, 20, 0.1) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-editable.editing {
+            border-color: #8B0000 !important;
+            background: #fff !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-slider-item {
+            background: rgba(245, 245, 240, 0.5) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-slider-item span {
+            color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-chart-editor {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border-color: #8B0000 !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-footer {
+            background: #5a0000 !important;
+            color: #C5A059 !important;
+        }
+
+        .wine-lab-radar-label-input {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: var(--space-xxs) var(--space-xs);
+            font-family: var(--font-body);
+            font-size: var(--fs-200);
+            width: 85px;
+            background: rgba(26, 26, 26, 0.8);
+            color: var(--ivory);
+            transition: all var(--transition-medium);
+        }
+
+        .wine-lab-radar-label-input:focus {
+            outline: none;
+            border-color: var(--wine-lab-primary);
+            box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.2);
+            background: rgba(26, 26, 26, 1);
+        }
+
+        :root[data-theme="day"] .wine-lab-radar-label-input {
+            border-color: rgba(139, 105, 20, 0.3) !important;
+            background: var(--ivory) !important;
+            color: var(--charcoal) !important;
+        }
+
+        :root[data-theme="day"] .wine-lab-radar-label-input:focus {
+            border-color: #8B0000 !important;
+            box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.2) !important;
+        }
+
+    </style>
+</head>
+<body class="hero-enhanced">
+    <div class="luxury-container">
+        <!-- Top Bar -->
+        <div class="wine-details-top-bar">
+            <a href="#" class="wine-details-back-btn" id="backButton">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <div class="wine-details-logo" onclick="window.location.href='./index.html'">
+                <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="wine-details-logo-image">
+            </div>
+            <h1 class="wine-details-top-title">WINE DETAILS</h1>
+            <button class="wine-details-share-btn" id="shareWineBtnTop">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <main class="wine-details-container">
+            <div class="wine-details-content">
+                <!-- Image Section -->
+                <div class="wine-image-section">
+                    <h1 class="wine-name" id="wineName">Loading...</h1>
+                    <!-- Tasting Notes (tra nome e immagine) -->
+                    <div id="tastingNotesContainer" style="display: none;">
+                        <!-- Populated by main.js -->
+                    </div>
+                    <div class="wine-image" id="wineImageContainer">
+                        <i class="fas fa-wine-bottle wine-bottle" id="wineBottleIcon"></i>
+                        <img id="wineBottleImage" src="" alt="Wine bottle" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- Wine Info Section -->
+                <div class="wine-info-section">
+                    
+                    <div class="wine-description" id="wineDescription" style="display: none;">
+                        Loading wine description...
+                    </div>
+                    
+                    <div class="wine-meta" id="wineMeta">
+                        <!-- Populated by main.js -->
+                    </div>
+                
+                    <!-- Information and Producer triggers -->
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
+                        <span class="info-popup-trigger" id="infoTrigger">Information</span>
+                        <span class="info-popup-trigger" id="producerTrigger" style="display: none;">Producer</span>
+                    </div>
+
+                    <!-- Food Pairings -->
+                    <div class="food-pairings" id="foodPairings" style="display: none;">
+                        <h2 class="section-title">Food Pairings</h2>
+                        <div class="pairing-list" id="pairingList">
+                            <!-- Populated by main.js -->
+                        </div>
+                    </div>
+
+                <!-- Share Button -->
+            <div class="share-wine-section">
+                <button class="share-wine-btn" id="shareWineBtn">
+                    <i class="fas fa-share-alt"></i> SHARE WINE
+                </button>
+                </div>
+
+                    <!-- Wine Lab -->
+                    <section class="wine-lab" id="wineLabSection">
+                        <div class="wine-lab-header">
+                            <h2 class="wine-lab-title">Wine Lab</h2>
+                            <button class="wine-lab-toggle" id="wineLabToggle" aria-expanded="false">Create Your Wine Card</button>
+                        </div>
+                        <div class="wine-lab-panel" id="wineLabPanel" hidden>
+                            <div class="wine-lab-controls">
+                                <button class="wine-lab-edit-btn" id="wineLabEditBtn">✏️ Edit Mode</button>
+                                <button class="wine-lab-save-btn" id="wineLabSaveBtn">💾 Save</button>
+                                <button class="wine-lab-download-btn" id="wineLabDownloadBtn">📸 Download</button>
+                                <button class="wine-lab-reset-btn" id="wineLabResetBtn">🔄 Reset</button>
+                            </div>
+                            <div class="wine-lab-indicator" id="wineLabIndicator">Edit mode active - click any text to edit.</div>
+                            <div class="wine-lab-card" id="wineLabCard">
+                                <div class="wine-lab-card-header">
+                                    <h3><span class="wine-lab-editable" data-field="winery">Producer</span> - <span class="wine-lab-editable" data-field="wineName">Wine Name</span> <span class="wine-lab-editable" data-field="vintage">NV</span></h3>
+                                    <span class="wine-lab-type wine-lab-editable" data-field="wineType">Red</span>
+                                </div>
+                                <div class="wine-lab-content">
+                                    <div class="wine-lab-section">
+                                        <div class="wine-lab-logo-bg">
+                                            <img src="./image/gcaLogo.png" alt="GCA logo">
+                                        </div>
+                                        <div class="wine-lab-section-body">
+                                            <h3 class="wine-lab-editable" data-field="fullWineName">Wine Name NV</h3>
+                                            <p class="wine-lab-editable" data-field="classification">Classification / Appellation</p>
+                                            <div class="wine-lab-info-grid">
+                                                <div class="wine-lab-info-item">
+                                                    <strong>Producer:</strong>
+                                                    <span class="wine-lab-editable" data-field="producer">Producer</span>
+                                                </div>
+                                                <div class="wine-lab-info-item">
+                                                    <strong>Grapes:</strong>
+                                                    <span class="wine-lab-editable" data-field="grapes">Grapes</span>
+                                                </div>
+                                                <div class="wine-lab-info-item">
+                                                    <strong>Vintage:</strong>
+                                                    <span class="wine-lab-editable" data-field="vintageSpec">NV</span>
+                                                </div>
+                                                <div class="wine-lab-info-item">
+                                                    <strong>Alcohol:</strong>
+                                                    <span class="wine-lab-editable" data-field="alcohol">N/A</span>
+                                                </div>
+                                                <div class="wine-lab-info-item">
+                                                    <strong>Aging:</strong>
+                                                    <span class="wine-lab-editable" data-field="aging">Aging details</span>
+                                                </div>
+                                                <div class="wine-lab-info-item">
+                                                    <strong>Serving:</strong>
+                                                    <span class="wine-lab-editable" data-field="servingTemp">16-18°C</span>
+                                                </div>
+                                                <div class="wine-lab-info-item">
+                                                    <strong>Cellaring:</strong>
+                                                    <span class="wine-lab-editable" data-field="cellaring">N/A</span>
+                                                </div>
+                                            </div>
+                                            <div class="wine-lab-summary">
+                                                <h4>Vintage <span class="wine-lab-editable" data-field="vintageYear">NV</span></h4>
+                                                <p class="wine-lab-editable" data-field="vintageDescription">Vintage notes and story.</p>
+                                                <h4>Ideal Food Pairings</h4>
+                                                <p class="wine-lab-editable" data-field="foodPairings">Add food pairings here.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="wine-lab-section">
+                                        <div class="wine-lab-logo-bg">
+                                            <img src="./image/gcaLogo.png" alt="GCA logo">
+                                        </div>
+                                        <div class="wine-lab-section-body">
+                                            <h3 class="wine-lab-chart-title">Organoleptic Profile</h3>
+                                            <p class="wine-lab-chart-hint" style="text-align: center; font-family: var(--font-body); font-size: var(--fs-200); color: var(--gold); margin-bottom: var(--space-md); font-style: italic;">
+                                                💡 Click on the charts to edit values (Edit Mode must be active)
+                                            </p>
+                                            <div class="wine-lab-chart-row">
+                                                <div class="wine-lab-chart-wrapper">
+                                                    <div class="wine-lab-chart-clickable">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%" id="wineLabRadarChart">
+                                                            <text x="200" y="30" font-family="Cinzel, serif" font-size="18" fill="var(--wine-lab-primary)" text-anchor="middle" font-weight="bold">Body and Structure</text>
+                                                            <polygon points="200,70 270,110 270,190 200,230 130,190 130,110" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <polygon points="200,90 250,120 250,180 200,210 150,180 150,120" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <polygon points="200,110 230,130 230,170 200,190 170,170 170,130" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <line x1="200" y1="150" x2="200" y2="70" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <line x1="200" y1="150" x2="270" y2="190" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <line x1="200" y1="150" x2="270" y2="110" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <line x1="200" y1="150" x2="200" y2="230" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <line x1="200" y1="150" x2="130" y2="190" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <line x1="200" y1="150" x2="130" y2="110" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <text id="wineLabRadarLabel1" x="200" y="65" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="middle">Body</text>
+                                                            <text id="wineLabRadarLabel2" x="280" y="110" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="start">Tannins</text>
+                                                            <text id="wineLabRadarLabel3" x="280" y="190" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="start">Alcohol</text>
+                                                            <text id="wineLabRadarLabel4" x="200" y="240" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="middle">Persistence</text>
+                                                            <text id="wineLabRadarLabel5" x="120" y="190" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Acidity</text>
+                                                            <text id="wineLabRadarLabel6" x="120" y="110" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Complexity</text>
+                                                            <polygon id="wineLabRadarPolygon" points="200,102 241,126 255,182 200,198 144,182 158,126" fill="rgba(var(--wine-lab-rgb-primary),0.5)" stroke="var(--wine-lab-primary)" stroke-width="2"/>
+                                                            <circle id="wineLabRadarPoint1" cx="200" cy="102" r="4" fill="var(--wine-lab-primary)"/>
+                                                            <circle id="wineLabRadarPoint2" cx="241" cy="126" r="4" fill="var(--wine-lab-primary)"/>
+                                                            <circle id="wineLabRadarPoint3" cx="255" cy="182" r="4" fill="var(--wine-lab-primary)"/>
+                                                            <circle id="wineLabRadarPoint4" cx="200" cy="198" r="4" fill="var(--wine-lab-primary)"/>
+                                                            <circle id="wineLabRadarPoint5" cx="144" cy="182" r="4" fill="var(--wine-lab-primary)"/>
+                                                            <circle id="wineLabRadarPoint6" cx="158" cy="126" r="4" fill="var(--wine-lab-primary)"/>
+                                                            <rect x="150" y="260" width="10" height="10" fill="rgba(var(--wine-lab-rgb-primary),0.5)" stroke="var(--wine-lab-primary)" />
+                                                            <text x="165" y="268" font-family="Cormorant, serif" font-size="12" fill="var(--ivory)" id="wineLabRadarLegend">Wine Name NV</text>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="wine-lab-chart-editor" id="wineLabRadarEditor">
+                                                        <h4>Edit Structure Profile</h4>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-radar-label-input" id="wineLabBodyName" value="Body">
+                                                            <input type="range" min="1" max="10" value="6" id="wineLabBodySlider">
+                                                            <span id="wineLabBodyValue">6</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-radar-label-input" id="wineLabTanninsName" value="Tannins">
+                                                            <input type="range" min="1" max="10" value="6" id="wineLabTanninsSlider">
+                                                            <span id="wineLabTanninsValue">6</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-radar-label-input" id="wineLabAlcoholName" value="Alcohol">
+                                                            <input type="range" min="1" max="10" value="6" id="wineLabAlcoholSlider">
+                                                            <span id="wineLabAlcoholValue">6</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-radar-label-input" id="wineLabPersistenceName" value="Persistence">
+                                                            <input type="range" min="1" max="10" value="6" id="wineLabPersistenceSlider">
+                                                            <span id="wineLabPersistenceValue">6</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-radar-label-input" id="wineLabAcidityName" value="Acidity">
+                                                            <input type="range" min="1" max="10" value="6" id="wineLabAciditySlider">
+                                                            <span id="wineLabAcidityValue">6</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-radar-label-input" id="wineLabComplexityName" value="Complexity">
+                                                            <input type="range" min="1" max="10" value="6" id="wineLabComplexitySlider">
+                                                            <span id="wineLabComplexityValue">6</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="wine-lab-chart-wrapper">
+                                                    <div class="wine-lab-chart-clickable">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 350" width="100%" height="100%" id="wineLabAromaChart">
+                                                            <text x="200" y="30" font-family="Cinzel, serif" font-size="18" fill="var(--wine-lab-primary)" text-anchor="middle" font-weight="bold">Aromatic Profile</text>
+                                                            <rect x="120" y="70" width="200" height="25" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <rect x="120" y="105" width="200" height="25" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <rect x="120" y="140" width="200" height="25" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <rect x="120" y="175" width="200" height="25" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <rect x="120" y="210" width="200" height="25" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <rect x="120" y="245" width="200" height="25" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <rect x="120" y="280" width="200" height="25" fill="var(--wine-lab-light-bg)" stroke="var(--wine-lab-accent)" stroke-width="1"/>
+                                                            <text id="wineLabAromaLabel1" x="115" y="87" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Red Fruit</text>
+                                                            <text id="wineLabAromaLabel2" x="115" y="122" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Black Fruit</text>
+                                                            <text id="wineLabAromaLabel3" x="115" y="157" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Floral</text>
+                                                            <text id="wineLabAromaLabel4" x="115" y="192" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Vanilla</text>
+                                                            <text id="wineLabAromaLabel5" x="115" y="227" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Spice</text>
+                                                            <text id="wineLabAromaLabel6" x="115" y="262" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Earth</text>
+                                                            <text id="wineLabAromaLabel7" x="115" y="297" font-family="Cormorant, serif" font-size="14" fill="var(--ivory)" text-anchor="end">Coffee</text>
+                                                            <rect id="wineLabRedFruitBar" x="120" y="70" width="80" height="25" fill="rgba(var(--wine-lab-rgb-primary),0.7)"/>
+                                                            <rect id="wineLabBlackFruitBar" x="120" y="105" width="80" height="25" fill="rgba(var(--wine-lab-rgb-primary),0.7)"/>
+                                                            <rect id="wineLabFloralBar" x="120" y="140" width="60" height="25" fill="rgba(var(--wine-lab-rgb-primary),0.7)"/>
+                                                            <rect id="wineLabVanillaBar" x="120" y="175" width="60" height="25" fill="rgba(var(--wine-lab-rgb-primary),0.7)"/>
+                                                            <rect id="wineLabSpiceBar" x="120" y="210" width="60" height="25" fill="rgba(var(--wine-lab-rgb-primary),0.7)"/>
+                                                            <rect id="wineLabEarthBar" x="120" y="245" width="40" height="25" fill="rgba(var(--wine-lab-rgb-primary),0.7)"/>
+                                                            <rect id="wineLabCoffeeBar" x="120" y="280" width="40" height="25" fill="rgba(var(--wine-lab-rgb-primary),0.7)"/>
+                                                            <text x="120" y="325" font-family="Cormorant, serif" font-size="12" fill="var(--ivory)">Low</text>
+                                                            <text x="220" y="325" font-family="Cormorant, serif" font-size="12" fill="var(--ivory)" text-anchor="middle">Medium</text>
+                                                            <text x="320" y="325" font-family="Cormorant, serif" font-size="12" fill="var(--ivory)" text-anchor="end">High</text>
+                                                            <line x1="120" y1="330" x2="320" y2="330" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <line x1="120" y1="328" x2="120" y2="332" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <line x1="220" y1="328" x2="220" y2="332" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                            <line x1="320" y1="328" x2="320" y2="332" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="wine-lab-chart-editor" id="wineLabAromaEditor">
+                                                        <h4>Edit Aromatic Profile</h4>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-aroma-name" id="wineLabRedFruitName" value="Red Fruit">
+                                                            <input type="range" min="0" max="200" value="80" id="wineLabRedFruitSlider">
+                                                            <span id="wineLabRedFruitValue">4</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-aroma-name" id="wineLabBlackFruitName" value="Black Fruit">
+                                                            <input type="range" min="0" max="200" value="80" id="wineLabBlackFruitSlider">
+                                                            <span id="wineLabBlackFruitValue">4</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-aroma-name" id="wineLabFloralName" value="Floral">
+                                                            <input type="range" min="0" max="200" value="60" id="wineLabFloralSlider">
+                                                            <span id="wineLabFloralValue">3</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-aroma-name" id="wineLabVanillaName" value="Vanilla">
+                                                            <input type="range" min="0" max="200" value="60" id="wineLabVanillaSlider">
+                                                            <span id="wineLabVanillaValue">3</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-aroma-name" id="wineLabSpiceName" value="Spice">
+                                                            <input type="range" min="0" max="200" value="60" id="wineLabSpiceSlider">
+                                                            <span id="wineLabSpiceValue">3</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-aroma-name" id="wineLabEarthName" value="Earth">
+                                                            <input type="range" min="0" max="200" value="40" id="wineLabEarthSlider">
+                                                            <span id="wineLabEarthValue">2</span>
+                                                        </div>
+                                                        <div class="wine-lab-slider-item">
+                                                            <input type="text" class="wine-lab-aroma-name" id="wineLabCoffeeName" value="Coffee">
+                                                            <input type="range" min="0" max="200" value="40" id="wineLabCoffeeSlider">
+                                                            <span id="wineLabCoffeeValue">2</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="wine-lab-section">
+                                        <div class="wine-lab-logo-bg">
+                                            <img src="./image/gcaLogo.png" alt="GCA logo">
+                                        </div>
+                                        <div class="wine-lab-section-body">
+                                            <h3 class="wine-lab-chart-title">Tasting Notes</h3>
+                                            <div class="wine-lab-info-grid">
+                                                <div>
+                                                    <h4>Visual</h4>
+                                                    <p class="wine-lab-editable" data-field="visual">Visual notes.</p>
+                                                </div>
+                                                <div>
+                                                    <h4>Olfactory</h4>
+                                                    <p class="wine-lab-editable" data-field="olfactory">Aromatic notes.</p>
+                                                </div>
+                                                <div>
+                                                    <h4>Gustatory</h4>
+                                                    <p class="wine-lab-editable" data-field="gustatory">Palate notes.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="wine-lab-footer">
+                                    &copy;<span class="wine-lab-editable" data-field="author">Gran Caffè L'Aquila</span> <span class="wine-lab-editable" data-field="year">2025</span> -
+                                    <span class="wine-lab-editable" data-field="footerWinery">Producer</span> -
+                                    <span class="wine-lab-editable" data-field="footerWine">Wine Name</span>. Consume responsibly.
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+            </div>
+        </main>
+
+        <!-- Info Popup Modal -->
+        <div class="info-popup-overlay" id="infoPopup">
+            <div class="info-popup-content">
+                <div class="info-popup-header">
+                    <h2 class="info-popup-title" id="infoPopupTitle">Information</h2>
+                    <button class="info-popup-close" id="infoPopupClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="info-popup-body" id="infoPopupBody">
+                    <!-- Content populated by main.js -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="luxury-footer">
+            <div class="footer-content">
+                <div class="footer-logo">GRAN CAFFÈ L'AQUILA</div>
+                <div class="footer-info">
+                    <p><i class="fas fa-map-marker-alt"></i> 1716 Chestnut St</p>
+                    <p><i class="fas fa-phone"></i> +1 (215) 568-5600</p>
+                </div>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+                <div class="copyright">
+                    <p>&copy; 2023 Gran Caffè L'Aquila</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-modal-content">
+            <div class="share-modal-header">
+                <h3>Share this Wine</h3>
+                <button class="close-share-modal" id="closeShareModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="share-options">
+                <div class="share-option" id="shareFacebook">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>Facebook</span>
+                </div>
+                <div class="share-option" id="shareInstagram">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </div>
+                <div class="share-option" id="shareTwitter">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </div>
+                <div class="share-option" id="shareWhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>WhatsApp</span>
+                </div>
+                <div class="share-option" id="shareEmail">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email</span>
+                </div>
+                <div class="share-option" id="shareSMS">
+                    <i class="fas fa-sms"></i>
+                    <span>SMS</span>
+                </div>
+            </div>
+            <div class="share-url-section">
+                <label for="shareUrl">Share Link:</label>
+                <div class="url-copy-container">
+                    <input type="text" id="shareUrl" readonly>
+                    <button class="copy-url-btn" id="copyUrlBtn">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/wineries.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Funzione per applicare il tema
+        function applyTheme() {
+            const dayMode = localStorage.getItem('dayMode');
+            // Default a 'day' (light mode) se non è stato salvato alcun valore
+            const isDayMode = dayMode === null ? true : dayMode === 'true';
+            document.documentElement.setAttribute('data-theme', isDayMode ? 'day' : 'night');
+            // Salva il valore di default se non esiste
+            if (dayMode === null) {
+                localStorage.setItem('dayMode', 'true');
+            }
+        }
+
+        // Applica il tema all'avvio
+        applyTheme();
+
+        // Ascolta i cambiamenti del tema
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'dayMode') {
+                applyTheme();
+            }
+        });
+
+        // Polling per verificare cambiamenti del tema
+        setInterval(function() {
+            const currentDayMode = localStorage.getItem('dayMode') === 'true';
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const expectedTheme = currentDayMode ? 'day' : 'night';
+            
+            if (currentTheme !== expectedTheme) {
+                applyTheme();
+            }
+        }, 100);
+
+        // Share Modal functionality (handled by main.js ShareWineManager, but keeping as fallback)
+        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize info popup if WineApp is available
+        if (window.wineApp) {
+            window.wineApp.setupInfoPopup();
+        }
+        
+        const shareWineBtn = document.getElementById('shareWineBtn');
+        const shareWineBtnTop = document.getElementById('shareWineBtnTop');
+        const shareModal = document.getElementById('shareModal');
+        const closeShareModal = document.getElementById('closeShareModal');
+
+            if (shareWineBtn && shareModal) {
+        shareWineBtn.addEventListener('click', () => shareModal.classList.add('active'));
+            }
+            if (shareWineBtnTop && shareModal) {
+        shareWineBtnTop.addEventListener('click', () => shareModal.classList.add('active'));
+            }
+            if (closeShareModal && shareModal) {
+        closeShareModal.addEventListener('click', () => shareModal.classList.remove('active'));
+            }
+            if (shareModal) {
+        shareModal.addEventListener('click', (e) => {
+            if (e.target === shareModal) shareModal.classList.remove('active');
+        });
+            }
+
+        // Copy URL
+            const copyUrlBtn = document.getElementById('copyUrlBtn');
+            if (copyUrlBtn) {
+                copyUrlBtn.addEventListener('click', () => {
+            const url = document.getElementById('shareUrl');
+                    if (url) {
+            url.select();
+                        try {
+            document.execCommand('copy');
+            alert('Link copied!');
+                        } catch (err) {
+                            // Fallback for modern browsers
+                            navigator.clipboard.writeText(url.value).then(() => {
+                                alert('Link copied!');
+                            }).catch(() => {
+                                console.error('Failed to copy URL');
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Set share URL
+            const shareUrl = document.getElementById('shareUrl');
+            if (shareUrl) {
+                shareUrl.value = window.location.href;
+            }
+
+            // Back Button handler - set href if not already set by WineApp
+            const backButton = document.getElementById('backButton');
+            if (backButton) {
+                // Wait for WineApp to set the href, or set it ourselves if not set
+                const checkBackButton = () => {
+                    if (backButton.href === '#' || backButton.href.endsWith('#')) {
+                        // Set default back URL
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const type = urlParams.get('type');
+                        
+                        let backUrl = 'index.html';
+                        const params = new URLSearchParams();
+                        
+                        // Try to get region from wine data if available
+                        if (window.wineApp && window.wineApp.wines) {
+                            const wineId = urlParams.get('id');
+                            if (wineId) {
+                                const wine = window.wineApp.wines.find(w => 
+                                    w.wine_number === wineId || 
+                                    w.wine_number === String(wineId) || 
+                                    String(w.wine_number) === String(wineId)
+                                );
+                                if (wine && wine.region) {
+                                    params.set('region', wine.region);
+                                }
+                            }
+                        }
+                        
+                        if (type) {
+                            params.set('type', type);
+                        }
+                        
+                        if (params.toString()) {
+                            backUrl += `?${params.toString()}`;
+                        }
+                        
+                        backButton.href = backUrl;
+                    }
+                };
+                
+                // Check immediately and after a delay to allow WineApp to set it
+                checkBackButton();
+                setTimeout(checkBackButton, 500);
+                
+                // Also handle click event as fallback
+                backButton.addEventListener('click', (e) => {
+                    if (backButton.href === '#' || backButton.href.endsWith('#')) {
+                        e.preventDefault();
+                        checkBackButton();
+                        // Navigate after setting href
+                        setTimeout(() => {
+                            window.location.href = backButton.href;
+                        }, 100);
+                    }
+                });
+            }
+
+            // Swipe gesture support for mobile/tablet navigation
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+            const minSwipeDistance = 50; // Minimum distance for a swipe
+            const maxVerticalDistance = 100; // Max vertical movement to consider it a horizontal swipe
+
+            const container = document.querySelector('.wine-details-container');
+            if (container) {
+                container.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+
+                container.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    touchEndY = e.changedTouches[0].screenY;
+                    handleSwipe();
+                }, { passive: true });
+
+                function handleSwipe() {
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = Math.abs(touchEndY - touchStartY);
+                    
+                    // Only trigger swipe if horizontal movement is greater than vertical (horizontal swipe)
+                    if (Math.abs(deltaX) > minSwipeDistance && deltaY < maxVerticalDistance) {
+                        if (deltaX > 0) {
+                            // Swipe right - go back
+                            if (backButton && backButton.href && !backButton.href.endsWith('#')) {
+                                window.location.href = backButton.href;
+                            } else {
+                                window.history.back();
+                            }
+                        }
+                        // Swipe left could be used for next wine in future
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -4231,14 +4231,16 @@ body:not(.home-page) .luxury-container {
 
 /* Tutti i dispositivi sotto iPad Pro - layout unificato (già gestito da @media (max-width: 1023px)) */
 
-/* Leaflet Zoom Controls - Position bottom left */
+/* Leaflet Zoom Controls - Position inside visible map area */
 .leaflet-control-zoom {
     position: absolute !important;
-    bottom: 20px !important;
-    left: 20px !important;
-    top: auto !important;
+    top: 120px !important;
+    left: 80px !important;
     right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
     margin: 0 !important;
+    z-index: 1000 !important;
 }
 
 .leaflet-control-zoom a {

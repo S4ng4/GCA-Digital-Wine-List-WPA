@@ -2353,7 +2353,7 @@ class WineListApp {
                            class="filter-search-input" 
                            placeholder="Search varietals (e.g., sangiovese)" 
                            autocomplete="off"
-                           style="width: 100%; padding: 0.75rem; border: 1px solid rgba(212, 175, 55, 0.3); background: rgba(0, 0, 0, 0.3); color: #F5F5F0; border-radius: 4px; font-family: 'Inter', sans-serif;">
+                           style="width: 100%; padding: 0.75rem; border: 1px solid rgba(212, 175, 55, 0.3); background: rgba(0, 0, 0, 0.3); color: #F2F2F2; border-radius: 4px; font-family: var(--font-body, 'Cormorant', serif);">
                 </div>
                 <div class="filter-options" id="varietalFilterOptions" style="max-height: 400px; overflow-y: auto;">
                     <button class="filter-option" data-varietal="">All Varietals</button>
@@ -2626,6 +2626,10 @@ class WineListApp {
     }
 
     setupHoverEffects() {
+        // Skip hover effects on touch-only devices to reduce listeners and layout work
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+            return;
+        }
         // Add hover effects to wine cards
         document.addEventListener('mouseover', (e) => {
             const wineCard = e.target.closest('.wine-card, .region-card, .luxury-wine-card');
@@ -3232,13 +3236,13 @@ window.addEventListener('pageshow', (event) => {
 // Add some utility functions for GitHub Pages compatibility
 function updateWineIcons() {
     const wineCards = document.querySelectorAll('.luxury-wine-card');
-        const iconMap = {
-        'ROSSO': './image/glassRed.png',
-        'BIANCO': './image/glassWhite.png',
-        'ROSATO': './image/glRose.png',
-            'ARANCIONE': './image/glRose.png',
-            'BOLLICINE': './image/glSparkling.png',
-            'NON ALCOLICO': './image/glSparkling.png'
+    const iconMap = {
+        'ROSSO': { webp: './image/glassRed.webp', png: './image/glassRed.png' },
+        'BIANCO': { webp: './image/glassWhite.webp', png: './image/glassWhite.png' },
+        'ROSATO': { webp: './image/glRose.webp', png: './image/glRose.png' },
+        'ARANCIONE': { webp: './image/glArancione.webp', png: './image/glArancione.png' },
+        'BOLLICINE': { webp: './image/glSparkling.webp', png: './image/glSparkling.png' },
+        'NON ALCOLICO': { webp: './image/gl00.webp', png: './image/gl00.png' }
     };
 
     wineCards.forEach(card => {
@@ -3248,7 +3252,7 @@ function updateWineIcons() {
             if (type && iconMap[type]) {
                 const icon = card.querySelector('.wine-icon');
                 if (icon) {
-                    icon.innerHTML = `<img src="${iconMap[type]}" alt="${type} wine icon">`;
+                    icon.innerHTML = `<img src="${iconMap[type].webp}" alt="${type} wine icon" loading="lazy" decoding="async" onerror="this.src='${iconMap[type].png}'">`;
                 }
             }
         }
@@ -3557,6 +3561,8 @@ let currentColors = { border: '#D4AF37', fill: '#D4AF37' };
 let mapInstance = null;
 let currentWineType = null;
 let currentSelectedRegion = null;
+let originalMapZoom = null; // Store original zoom level for restoration
+let originalMapCenter = null; // Store original map center for restoration
 
 // Mobile map variables
 let mobileMapInstance = null;
@@ -4222,8 +4228,8 @@ function initInteractiveMap() {
         // Initialize map with uniform touch/mouse interactions
         mapInstance = L.map('map', {
             zoomControl: true,
-            minZoom: 6,
-            maxZoom: 8,
+            minZoom: 8,
+            maxZoom: 10,
             maxBounds: [[35.5, 5.0], [48.0, 20.0]],
             maxBoundsViscosity: 0.5, // Reduced for smoother panning
             tap: true, // Enable tap on touch devices
@@ -4237,7 +4243,7 @@ function initInteractiveMap() {
             inertiaDeceleration: 3000, // Deceleration rate for inertia
             inertiaMaxSpeed: 1500, // Max speed for inertia
             worldCopyJump: false // Prevent map from jumping when panning
-        }).setView([41.9, 12.6], 6);
+        }).setView([41.9, 12.6], 10);
         
         // Add tile layer with HTTPS tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -4275,19 +4281,24 @@ function initInteractiveMap() {
             mobileContainer.style.setProperty('--mobile-map-height', `${increasedMapHeight}px`);
         }
         
-        // Update mobile wines cards container height for iPhone Safari
+        // Update mobile wines cards container height for iPhone Safari - Responsive and Dynamic
         function updateMobileWinesCardsHeight() {
             const winesContainer = document.getElementById('mobileWinesCardsContainer');
             const winesHeader = document.querySelector('.mobile-wines-cards-header');
             if (!winesContainer || window.getComputedStyle(winesContainer).display === 'none') {
                 return;
             }
-            const viewport = window.visualViewport;
-            const viewportHeight = viewport ? viewport.height : window.innerHeight;
+            
+            // Use visualViewport if available (better for mobile with virtual keyboards)
+            const viewport = window.visualViewport || window;
+            const viewportHeight = viewport.height || window.innerHeight;
+            const viewportWidth = viewport.width || window.innerWidth;
+            
             const topNav = document.querySelector('.top-nav');
             const wineSelector = document.querySelector('.mobile-wine-type-selector');
             const searchBar = document.getElementById('mobileSearchBarContainer');
             let reservedHeight = 0;
+            
             if (topNav && window.getComputedStyle(topNav).display !== 'none') {
                 reservedHeight += topNav.offsetHeight;
             }
@@ -4300,32 +4311,39 @@ function initInteractiveMap() {
             if (winesHeader) {
                 reservedHeight += winesHeader.offsetHeight;
             }
-            // Use actual viewport height minus reserved space
-            // Add safe area insets for iPhone
+            
+            // Get safe area insets for iPhone
             const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)') || '0', 10) || 0;
             const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-bottom)') || '0', 10) || 0;
             
-            // Calculate available height more accurately
-            // Use 100vh or 100dvh for better iOS Safari support
-            const fullHeight = window.innerHeight || document.documentElement.clientHeight;
+            // Calculate available height using viewport units (dvh for dynamic viewport)
+            const fullHeight = viewportHeight;
             const availableHeight = fullHeight - reservedHeight;
             
-            // Set min-height instead of fixed height to allow flex to work
-            // This prevents compression while still ensuring minimum space
-            winesContainer.style.minHeight = `${availableHeight}px`;
-            winesContainer.style.height = 'auto';
-            winesContainer.style.maxHeight = 'none';
+            // Set container to use full viewport height dynamically
+            winesContainer.style.height = `${fullHeight}px`;
+            winesContainer.style.minHeight = `${fullHeight}px`;
+            winesContainer.style.maxHeight = `${fullHeight}px`;
+            winesContainer.style.width = '100%';
             
-            // Ensure grid container can scroll properly and doesn't collapse
+            // Ensure grid container expands to fill available space
             const winesGrid = document.getElementById('mobileWinesCardsGrid');
             if (winesGrid) {
-                winesGrid.style.height = 'auto';
+                // Calculate grid height (container height minus header)
+                const gridHeight = availableHeight;
+                
+                winesGrid.style.height = `${gridHeight}px`;
+                winesGrid.style.minHeight = `${gridHeight}px`;
                 winesGrid.style.maxHeight = 'none';
-                winesGrid.style.minHeight = '0';
-                // Force recalculation of grid layout
-                winesGrid.style.display = 'none';
-                winesGrid.offsetHeight; // Trigger reflow
-                winesGrid.style.display = 'grid';
+                winesGrid.style.width = '100%';
+                winesGrid.style.flex = '1';
+                
+                // Force recalculation on orientation change
+                if (window.orientation !== undefined) {
+                    winesGrid.style.display = 'none';
+                    winesGrid.offsetHeight; // Trigger reflow
+                    winesGrid.style.display = 'grid';
+                }
             }
         }
         
@@ -4349,17 +4367,115 @@ function initInteractiveMap() {
                 }
             }, 200 + extraDelay);
         }
+        // Enhanced responsive listeners for dynamic updates
         window.addEventListener('resize', () => scheduleViewportRefresh());
-        window.addEventListener('orientationchange', () => scheduleViewportRefresh(200));
+        window.addEventListener('orientationchange', () => {
+            // Immediate update on orientation change
+            setTimeout(() => {
+                updateMobileWinesCardsHeight();
+                scheduleViewportRefresh(300);
+            }, 100);
+        });
         
-        // Listen for visualViewport changes (iPhone Safari address bar show/hide)
+        // Listen to visualViewport changes (for mobile browsers with virtual keyboards)
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
                 scheduleViewportRefresh();
             });
             window.visualViewport.addEventListener('scroll', () => {
-                scheduleViewportRefresh();
+                // Update on scroll to handle dynamic viewport changes
+                scheduleViewportRefresh(100);
             });
+        }
+        
+        // Listen to viewport changes on mobile devices
+        window.addEventListener('focus', () => {
+            scheduleViewportRefresh(100);
+        });
+        
+        // Setup scroll listener to hide organic description when user scrolls
+        window.setupOrganicDescriptionScrollListener = function() {
+            const winesGrid = document.getElementById('mobileWinesCardsGrid');
+            if (!winesGrid) return;
+            
+            // Remove existing listener if any (to avoid duplicates)
+            const existingHandler = winesGrid._organicDescriptionScrollHandler;
+            if (existingHandler) {
+                winesGrid.removeEventListener('scroll', existingHandler);
+            }
+            
+            // Create new scroll handler
+            const scrollHandler = () => {
+                const winesHeader = document.querySelector('.mobile-wines-cards-header');
+                const organicDescription = winesHeader?.querySelector('.mobile-wines-cards-organic-description');
+                
+                if (organicDescription && winesGrid) {
+                    const scrollTop = winesGrid.scrollTop;
+                    const scrollThreshold = 10; // Hide after scrolling 10px
+                    
+                    if (scrollTop > scrollThreshold) {
+                        organicDescription.style.opacity = '0';
+                        organicDescription.style.transform = 'translateY(-10px)';
+                        organicDescription.style.pointerEvents = 'none';
+                        organicDescription.style.maxHeight = '0';
+                        organicDescription.style.marginTop = '0';
+                        organicDescription.style.marginBottom = '0';
+                        organicDescription.style.paddingTop = '0';
+                        organicDescription.style.paddingBottom = '0';
+                        organicDescription.style.overflow = 'hidden';
+                    } else {
+                        organicDescription.style.opacity = '1';
+                        organicDescription.style.transform = 'translateY(0)';
+                        organicDescription.style.pointerEvents = 'auto';
+                        organicDescription.style.maxHeight = 'none';
+                        organicDescription.style.marginTop = '1rem';
+                        organicDescription.style.marginBottom = '';
+                        organicDescription.style.paddingTop = '1rem';
+                        organicDescription.style.paddingBottom = '1rem';
+                        organicDescription.style.overflow = 'visible';
+                    }
+                }
+            };
+            
+            // Store handler reference for cleanup
+            winesGrid._organicDescriptionScrollHandler = scrollHandler;
+            
+            // Add scroll listener
+            winesGrid.addEventListener('scroll', scrollHandler, { passive: true });
+        }
+        
+                // Setup scroll listener when grid becomes visible
+        const observer = new MutationObserver(() => {
+            const winesGrid = document.getElementById('mobileWinesCardsGrid');
+            const winesContainer = document.getElementById('mobileWinesCardsContainer');
+            if (winesGrid && winesContainer && window.getComputedStyle(winesContainer).display !== 'none') {
+                setTimeout(() => {
+                    if (window.setupOrganicDescriptionScrollListener) {
+                        window.setupOrganicDescriptionScrollListener();
+                    }
+                }, 100);
+            }
+        });
+        
+        // Observe changes to the wines container
+        const winesContainerObserver = document.getElementById('mobileWinesCardsContainer');
+        if (winesContainerObserver) {
+            observer.observe(winesContainerObserver, { 
+                attributes: true, 
+                attributeFilter: ['style'],
+                childList: true,
+                subtree: true
+            });
+        }
+        
+        // Listen for visualViewport changes (iPhone Safari address bar show/hide)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                scheduleViewportRefresh();
+            }, { passive: true });
+            window.visualViewport.addEventListener('scroll', () => {
+                scheduleViewportRefresh();
+            }, { passive: true });
         }
         
         // Load GeoJSON with error handling and fallback
@@ -4387,6 +4503,9 @@ function initInteractiveMap() {
                 }).addTo(mapInstance);
                 console.log('✅ geoJsonLayer created and added to map');
                 mapInstance.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20] });
+                // Store original zoom and center for restoration
+                originalMapZoom = mapInstance.getZoom();
+                originalMapCenter = mapInstance.getCenter();
                 
                 // Update map colors if wine type is selected (from URL or active card)
                 // Check for active wine card if no URL type is set
@@ -4869,14 +4988,14 @@ function initInteractiveMap() {
                 if (!window.wineApp || !window.wineApp.wines) return;
                 wineTypesScroll.innerHTML = '';
                 const wineTypes = [
-                    { type: 'ROSSO', name: 'Red', icon: './image/glassRed.png' },
-                    { type: 'BIANCO', name: 'White', icon: './image/glassWhite.png' },
-                    { type: 'ROSATO', name: 'Rosé', icon: './image/glRose.png' },
-                    { type: 'ARANCIONE', name: 'Orange', icon: './image/glArancione.png' },
-                    { type: 'BOLLICINE', name: 'Sparkling', icon: './image/glSparkling.png' },
-                    { type: 'NON ALCOLICO', name: 'Non-Alc', icon: './image/gl00.png' }
+                    { type: 'ROSSO', name: 'Red', icon: './image/glassRed.webp', fallback: './image/glassRed.png' },
+                    { type: 'BIANCO', name: 'White', icon: './image/glassWhite.webp', fallback: './image/glassWhite.png' },
+                    { type: 'ROSATO', name: 'Rosé', icon: './image/glRose.webp', fallback: './image/glRose.png' },
+                    { type: 'ARANCIONE', name: 'Orange', icon: './image/glArancione.webp', fallback: './image/glArancione.png' },
+                    { type: 'BOLLICINE', name: 'Sparkling', icon: './image/glSparkling.webp', fallback: './image/glSparkling.png' },
+                    { type: 'NON ALCOLICO', name: 'Non-Alc', icon: './image/gl00.webp', fallback: './image/gl00.png' }
                 ];
-                wineTypes.forEach(({ type, name, icon }) => {
+                wineTypes.forEach(({ type, name, icon, fallback }) => {
                     const count = window.wineApp.wines.filter(wine => 
                         window.wineApp.wineMatchesFamily(wine, type)
                     ).length;
@@ -4886,7 +5005,7 @@ function initInteractiveMap() {
                         chip.dataset.type = type;
                         chip.innerHTML = `
                             <div class="mobile-wine-type-icon">
-                                <img src="${icon}" alt="${name}">
+                                <img src="${icon}" alt="${name}" loading="lazy" decoding="async" onerror="this.src='${fallback}'">
                             </div>
                             <div class="mobile-wine-type-name">${name}</div>
                             <div class="mobile-wine-type-count">${count}</div>
@@ -5168,7 +5287,7 @@ function initInteractiveMap() {
                         inertiaDeceleration: 3000, // Deceleration rate for inertia (matching desktop)
                         inertiaMaxSpeed: 1500, // Max speed for inertia (matching desktop)
                         worldCopyJump: false // Prevent map from jumping when panning
-                    }).setView([42.5, 12.5], 5.8); // Slightly different angle and zoom for better view
+                    }).setView([42.0, 12.5], 5.5); // Zoom ridotto per mostrare tutta l'Italia con label visibili
                     // Add tile layer with dark theme
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '© OpenStreetMap contributors',
@@ -5300,7 +5419,7 @@ function initInteractiveMap() {
                             mobileMapInstance.fitBounds(bounds, { padding: [80, 80] });
                             // Slight adjustment for better angle - zoom leggermente ridotto per mostrare tutte le regioni
                             setTimeout(() => {
-                                mobileMapInstance.setView([42.5, 12.5], 5.5);
+                                mobileMapInstance.setView([42.0, 12.5], 5.3);
                             }, 100);
                             
                             // Invalidate size again after GeoJSON is added
@@ -5460,7 +5579,7 @@ function initInteractiveMap() {
             showMobileRegionInfo(regionName, mobileCurrentWineType);
         }
         
-        // Add region labels with connecting lines to mobile map
+        // Add region labels centered within each region
         function addMobileRegionLabels(geojson) {
             if (!mobileMapInstance || !geojson) return;
             
@@ -5472,416 +5591,63 @@ function initInteractiveMap() {
             // Clear existing labels
             window.mobileRegionLabelsLayer.clearLayers();
             
-            // Store placed labels for collision detection
-            const placedLabels = [];
-            
             // Calculate label width based on text length (approximate)
             const getLabelWidth = (text) => {
                 // Approximate: ~8px per character + padding
                 return Math.max(80, text.length * 8 + 20);
             };
             
-            // Check if a position collides with existing labels
-            const checkCollision = (lat, lng, width, height = 30) => {
-                // More accurate padding: account for label size
-                // At Italy's latitude (~42-47°), 1 degree ≈ 78-111km
-                // Label width in pixels, convert to approximate degrees
-                // Assuming zoom level gives us ~1000px per degree longitude
-                const paddingLat = 0.18; // Increased minimum vertical distance in degrees (was 0.12)
-                const paddingLng = 0.22; // Increased minimum horizontal distance in degrees (was 0.15)
-                
-                // Convert pixel width to degrees (rough estimate: 100px ≈ 0.1 degrees at typical zoom)
-                const widthDeg = (width / 1000) * 0.2; // More conservative estimate (was 0.15)
-                
-                for (const placed of placedLabels) {
-                    const latDiff = Math.abs(lat - placed.lat);
-                    const lngDiff = Math.abs(lng - placed.lng);
-                    
-                    // Check if labels overlap (considering both dimensions)
-                    // Labels overlap if they're close in both lat and lng
-                    if (latDiff < paddingLat && lngDiff < (widthDeg + paddingLng)) {
-                        return true; // Collision detected
-                    }
-                    
-                    // Also check if too close even if not overlapping (for readability)
-                    const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
-                    if (distance < 0.15) { // Increased from 0.1 - Very close labels
-                        return true;
-                    }
-                }
-                return false;
+            // Manual position adjustments to center labels within irregular region shapes
+            // Values are offsets from geometric center: { lat: latOffset, lng: lngOffset }
+            // Posizionamenti ottimizzati per evitare sovrapposizioni e leggibilità professionale
+            const regionAdjustments = {
+                'piemonte': { lat: -0.4, lng: -0.25 },           // Spostato più in basso a sinistra
+                'valle d\'aosta': { lat: 0.3, lng: -0.8 },       // Spostato molto in alto a sinistra
+                'lombardia': { lat: 0.45, lng: 0.15 },           // Spostato in alto
+                'trentino-alto adige': { lat: 0.55, lng: -0.5 }, // Spostato molto in alto a sinistra
+                'veneto': { lat: 0.35, lng: 0.6 },               // Spostato più a destra
+                'friuli-venezia giulia': { lat: 0.55, lng: 1.0 },// Spostato +13px a destra
+                'liguria': { lat: -0.3, lng: -1.3 },             // Spostato molto a sinistra fuori regione
+                'emilia-romagna': { lat: 0.05, lng: 0.1 },       // Centrato
+                'toscana': { lat: -0.2, lng: -0.55 },            // Spostato a sinistra
+                'umbria': { lat: -0.15, lng: 0.05 },             // Centrato leggermente in basso
+                'marche': { lat: 0.15, lng: 0.55 },              // Spostato a destra verso la costa
+                'lazio': { lat: -0.35, lng: -0.35 },             // Spostato più in basso a sinistra
+                'abruzzo': { lat: 0.2, lng: 0.5 },               // Spostato a destra
+                'molise': { lat: 0.1, lng: 0.75 },               // Spostato molto a destra (regione piccola)
+                'campania': { lat: -0.45, lng: -0.25 },          // Spostato più in basso
+                'puglia': { lat: 0.15, lng: 0.85 },              // Spostato molto a destra
+                'basilicata': { lat: 0.1, lng: 0.5 },            // Spostato a destra
+                'calabria': { lat: -0.35, lng: 0.2 },            // Spostato più in basso
+                'sicilia': { lat: -0.25, lng: 0 },               // Centrato, leggermente in basso
+                'sardegna': { lat: 0, lng: 0 }                   // Centrato (isola isolata)
             };
             
-            // Get optimal label position - prefer center of region, fallback to outside if collision
-            const getOptimalPosition = (bounds, center, regionName) => {
-                const labelWidth = getLabelWidth(regionName);
-                const offset = 0.3; // Increased base offset in degrees (outside the region) (was 0.25)
-                const largeOffset = 0.65; // Increased larger offset for crowded areas (was 0.5)
-                const isNorth = center.lat > 43; // Regions in northern Italy
-                const isSmall = (bounds.getNorth() - bounds.getSouth()) < 0.5; // Small regions
-                
-                // Calculate region dimensions for inner positioning
-                const latRange = bounds.getNorth() - bounds.getSouth();
-                const lngRange = bounds.getEast() - bounds.getWest();
-                const innerOffset = Math.min(latRange * 0.1, lngRange * 0.1, 0.05); // Small offset from center
-                
-                // Identify special regions
+            // Process each region
+            geojson.features.forEach(feature => {
+                const regionName = feature.properties.reg_name || feature.properties.NAME || feature.properties.name || 'Unknown';
                 const normalizedName = regionName.trim().toLowerCase();
-                const isLeftSideRegion = normalizedName.includes('friuli') || 
-                                        normalizedName.includes('veneto') || 
-                                        normalizedName.includes('emilia');
-                const isTrentino = normalizedName.includes('trentino');
                 
-                // Regions that need more external positioning
-                const needsExternalPosition = normalizedName.includes('veneto') || 
-                                            normalizedName.includes('piemonte') || 
-                                            normalizedName.includes('liguria') || 
-                                            normalizedName.includes('marche') || 
-                                            normalizedName.includes('molise') || 
-                                            normalizedName.includes('puglia');
-                
-                // Use larger offset for regions that need external positioning
-                const externalOffset = needsExternalPosition ? largeOffset : offset;
-                
-                // Generate candidate positions - PRIORITY: center first, then nearby, then outside
-                const candidates = [];
-                
-                // Special handling for left-side regions (Friuli, Veneto, Emilia-Romagna)
-                if (isLeftSideRegion) {
-                    // PRIORITY 1: Right edge of region (sulla destra della regione)
-                    // Use larger offset for Veneto
-                    const venetoOffset = normalizedName.includes('veneto') ? largeOffset : offset;
-                    candidates.push({ lat: center.lat, lng: bounds.getEast() + venetoOffset * 0.8, priority: 1 });
-                    candidates.push({ lat: center.lat, lng: bounds.getEast() + venetoOffset * 1.2, priority: 2 });
-                    // Fallback to center if right edge collides
-                    candidates.push({ lat: center.lat, lng: center.lng, priority: 3 });
-                }
-                // Special handling for Trentino
-                else if (isTrentino) {
-                    // PRIORITY 1: Above the region (sopra la mappa)
-                    candidates.push({ lat: bounds.getNorth() + offset * 0.6, lng: center.lng, priority: 1 });
-                    candidates.push({ lat: bounds.getNorth() + offset * 0.8, lng: center.lng, priority: 2 });
-                    // Fallback to center if above collides
-                    candidates.push({ lat: center.lat, lng: center.lng, priority: 3 });
-                }
-                // Special handling for regions that need external positioning
-                else if (needsExternalPosition) {
-                    // PRIORITY 1: External positions (more outside)
-                    if (normalizedName.includes('piemonte')) {
-                        candidates.push({ lat: bounds.getNorth() + externalOffset * 0.8, lng: bounds.getWest() - externalOffset * 0.6, priority: 1 });
-                        candidates.push({ lat: bounds.getNorth() + externalOffset * 1.0, lng: bounds.getWest() - externalOffset * 0.8, priority: 2 });
-                    } else if (normalizedName.includes('liguria')) {
-                        candidates.push({ lat: center.lat, lng: bounds.getWest() - externalOffset * 0.8, priority: 1 });
-                        candidates.push({ lat: center.lat, lng: bounds.getWest() - externalOffset * 1.2, priority: 2 });
-                    } else if (normalizedName.includes('marche')) {
-                        candidates.push({ lat: bounds.getEast() + externalOffset * 0.8, lng: center.lat, priority: 1 });
-                        candidates.push({ lat: bounds.getEast() + externalOffset * 1.2, lng: center.lat, priority: 2 });
-                    } else if (normalizedName.includes('molise')) {
-                        candidates.push({ lat: bounds.getEast() + externalOffset * 0.8, lng: center.lat, priority: 1 });
-                        candidates.push({ lat: bounds.getEast() + externalOffset * 1.0, lng: center.lat, priority: 2 });
-                    } else if (normalizedName.includes('puglia')) {
-                        candidates.push({ lat: center.lat, lng: bounds.getEast() + externalOffset * 1.0, priority: 1 });
-                        candidates.push({ lat: center.lat, lng: bounds.getEast() + externalOffset * 1.4, priority: 2 });
-                    }
-                    // Fallback to center if external positions collide
-                    candidates.push({ lat: center.lat, lng: center.lng, priority: 3 });
-                }
-                // Default: center first
-                else {
-                    // PRIORITY 1: Center of region (best position)
-                    candidates.push({ lat: center.lat, lng: center.lng, priority: 1 });
-                }
-                
-                // PRIORITY 2: Small offsets from center (still inside region)
-                candidates.push(
-                    { lat: center.lat - innerOffset * 0.3, lng: center.lng, priority: 2 },
-                    { lat: center.lat + innerOffset * 0.3, lng: center.lng, priority: 3 },
-                    { lat: center.lat, lng: center.lng - innerOffset * 0.3, priority: 4 },
-                    { lat: center.lat, lng: center.lng + innerOffset * 0.3, priority: 5 },
-                    { lat: center.lat - innerOffset * 0.2, lng: center.lng - innerOffset * 0.2, priority: 6 },
-                    { lat: center.lat - innerOffset * 0.2, lng: center.lng + innerOffset * 0.2, priority: 7 },
-                    { lat: center.lat + innerOffset * 0.2, lng: center.lng - innerOffset * 0.2, priority: 8 },
-                    { lat: center.lat + innerOffset * 0.2, lng: center.lng + innerOffset * 0.2, priority: 9 }
-                );
-                
-                // PRIORITY 3: Positions near edges but still inside (for larger regions)
-                if (latRange > 0.5 && lngRange > 0.5) {
-                    const edgeOffset = Math.min(latRange * 0.2, lngRange * 0.2, 0.15);
-                    candidates.push(
-                        { lat: center.lat - edgeOffset, lng: center.lng, priority: 10 },
-                        { lat: center.lat + edgeOffset, lng: center.lng, priority: 11 },
-                        { lat: center.lat, lng: center.lng - edgeOffset, priority: 12 },
-                        { lat: center.lat, lng: center.lng + edgeOffset, priority: 13 }
-                    );
-                }
-                
-                // PRIORITY 4: Outside positions (fallback if center collides)
-                // For northern regions, prefer top positions
-                if (isNorth) {
-                    candidates.push(
-                        { lat: bounds.getNorth() + offset * 0.5, lng: center.lng, priority: 14 },
-                        { lat: center.lat, lng: bounds.getEast() + offset * 0.5, priority: 15 },
-                        { lat: bounds.getNorth() + offset, lng: center.lng, priority: 16 },
-                        { lat: center.lat, lng: bounds.getEast() + offset, priority: 17 }
-                    );
-                } else {
-                    // For southern regions, prefer bottom or side positions
-                    candidates.push(
-                        { lat: center.lat, lng: bounds.getEast() + offset * 0.5, priority: 14 },
-                        { lat: bounds.getSouth() - offset * 0.5, lng: center.lng, priority: 15 },
-                        { lat: center.lat, lng: bounds.getEast() + offset, priority: 16 },
-                        { lat: bounds.getSouth() - offset, lng: center.lng, priority: 17 }
-                    );
-                }
-                
-                // PRIORITY 5: Diagonal outside positions
-                candidates.push(
-                    { lat: bounds.getNorth() + offset * 0.7, lng: bounds.getEast() + offset * 0.7, priority: 18 },
-                    { lat: bounds.getNorth() + offset * 0.7, lng: bounds.getWest() - offset * 0.7, priority: 19 },
-                    { lat: bounds.getSouth() - offset * 0.7, lng: bounds.getEast() + offset * 0.7, priority: 20 },
-                    { lat: bounds.getSouth() - offset * 0.7, lng: bounds.getWest() - offset * 0.7, priority: 21 }
-                );
-                
-                // PRIORITY 6: Far positions for crowded areas
-                candidates.push(
-                    { lat: center.lat, lng: bounds.getEast() + largeOffset, priority: 22 },
-                    { lat: center.lat, lng: bounds.getWest() - largeOffset, priority: 23 },
-                    { lat: bounds.getNorth() + largeOffset, lng: center.lng, priority: 24 },
-                    { lat: bounds.getSouth() - largeOffset, lng: center.lng, priority: 25 }
-                );
-                
-                // Filter candidates to ensure they're valid (inside bounds for center positions)
-                const validCandidates = candidates.map(c => {
-                    // For priorities 1-13 (center positions), ensure they're inside bounds
-                    if (c.priority <= 13) {
-                        const lat = Math.max(bounds.getSouth(), Math.min(bounds.getNorth(), c.lat));
-                        const lng = Math.max(bounds.getWest(), Math.min(bounds.getEast(), c.lng));
-                        return { ...c, lat, lng };
-                    }
-                    return c;
-                });
-                
-                // Sort by priority
-                validCandidates.sort((a, b) => a.priority - b.priority);
-                
-                // Find first non-colliding position
-                for (const candidate of validCandidates) {
-                    if (!checkCollision(candidate.lat, candidate.lng, labelWidth)) {
-                        return candidate;
-                    }
-                }
-                
-                // If all positions collide, use center (guaranteed to be inside)
-                return { lat: center.lat, lng: center.lng, priority: 999 };
-            };
-            
-            // Process regions in order (smaller regions first to avoid blocking larger ones)
-            const regions = geojson.features.map(feature => {
+                // Create temporary layer to get bounds
                 const layer = L.geoJSON(feature);
                 const bounds = layer.getBounds();
-                const area = bounds.getNorth() - bounds.getSouth() + bounds.getEast() - bounds.getWest();
-                return { feature, layer, bounds, area };
-            }).sort((a, b) => a.area - b.area);
-            
-            // First pass: calculate all positions
-            const regionData = [];
-            regions.forEach(({ feature, layer, bounds }) => {
-                const regionName = feature.properties.reg_name || feature.properties.NAME || feature.properties.name || 'Unknown';
                 const center = bounds.getCenter();
-                const normalizedName = regionName.trim().toLowerCase();
                 
-                // Get optimal position
-                let position = getOptimalPosition(bounds, center, regionName);
-                
-                regionData.push({
-                    feature,
-                    layer,
-                    bounds,
-                    regionName,
-                    normalizedName,
-                    center,
-                    position
-                });
-            });
-            
-            // Second pass: apply specific label adjustments based on other regions
-            // First pass: calculate base positions and store them
-            const regionPositions = {};
-            const regionFinalPositions = {}; // Store final positions after adjustments
-            
-            // Convert 3px to degrees (approximate: at typical zoom, 1px ≈ 0.001-0.002 degrees)
-            const px3ToDegrees = 0.004; // Approximately 3px in degrees
-            
-            // First iteration: calculate positions for regions that don't depend on others
-            regionData.forEach(({ feature, layer, bounds, regionName, normalizedName, center, position }) => {
-                let finalPosition = { ...position };
-                const labelWidth = getLabelWidth(regionName);
-                
-                // Store initial position data
-                regionPositions[normalizedName] = { 
-                    lat: position.lat, 
-                    lng: position.lng,
-                    bounds: bounds,
-                    center: center,
-                    labelWidth: labelWidth
-                };
-                
-                // Apply adjustments for regions that DON'T depend on others
-                if (normalizedName.includes('toscana')) {
-                    // Toscana: mantieni posizione (usata come riferimento per Liguria)
-                    finalPosition = { lat: position.lat, lng: position.lng, priority: position.priority };
-                } else if (normalizedName.includes('abruzzo')) {
-                    // Abruzzo: si sposta più a destra (usato come riferimento per Marche)
-                    finalPosition = { lat: position.lat, lng: bounds.getEast() + 0.3, priority: position.priority };
-                } else if (normalizedName.includes('umbria')) {
-                    // Umbria: spostata dove inizia la U (inizio del testo, quindi spostare a sinistra)
-                    const halfWidth = (labelWidth / 1000) * 0.15;
-                    finalPosition = { 
-                        lat: position.lat, 
-                        lng: position.lng - halfWidth,
-                        priority: position.priority 
-                    };
-                } else if (normalizedName.includes('basilicata')) {
-                    // Basilicata: abbassata di 3px e spostata dove è attualmente l'ultima "a" di Basilicata
-                    const halfWidth = (labelWidth / 1000) * 0.1;
-                    finalPosition = { 
-                        lat: position.lat - 0.5,
-                        lng: position.lng + 1,
-                        priority: position.priority 
-                    };
-                } else if (normalizedName.includes('friuli')) {
-                    // Friuli-Venezia Giulia: spostata dove è presente l'ultima lettera "a" di Giulia
-                    const halfWidth = (labelWidth / 1000) * 0.15;
-                    finalPosition = { 
-                        lat: position.lat, 
-                        lng: position.lng + 2,
-                        priority: position.priority 
-                    };
-                } else if (normalizedName.includes('trentino')) {
-                    // Trentino: abbassato e centrato nella regione
-                    finalPosition = { 
-                        lat: center.lat + 0.8,
-                        lng: center.lng,
-                        priority: position.priority 
-                    };
-                } else if (normalizedName.includes('veneto')) {
-                    finalPosition = { lat: position.lat - 0.4, lng: bounds.getEast() + 0.4, priority: position.priority };
-                } else if (normalizedName.includes('emilia')) {
-                    finalPosition = { lat: position.lat, lng: bounds.getEast() + 0.3, priority: position.priority };
-                } else if (normalizedName.includes('lombardia')) {
-                    finalPosition = { lat: position.lat, lng: position.lng + 0.7, priority: position.priority };
-                } else if (normalizedName.includes('lazio')) {
-                    finalPosition = { lat: position.lat, lng: position.lng + 1.1, priority: position.priority };
-                } else if (normalizedName.includes('molise')) {
-                    finalPosition = { lat: position.lat + 0.35, lng: bounds.getEast() + 1.0, priority: position.priority };
-                } else if (normalizedName.includes('campania')) {
-                    finalPosition = { lat: position.lat, lng: position.lng - 0.1, priority: position.priority };
-                } else if (normalizedName.includes('puglia')) {
-                    finalPosition = { lat: position.lat, lng: bounds.getEast() + 0.5, priority: position.priority };
-                } else if (normalizedName.includes('calabria')) {
-                    finalPosition = { lat: position.lat, lng: position.lng - 0.1, priority: position.priority };
-                } else if (normalizedName.includes('sicilia')) {
-                    finalPosition = { lat: position.lat, lng: position.lng + 1.1, priority: position.priority };
-                } else if (normalizedName.includes('sardegna')) {
-                    finalPosition = { lat: position.lat, lng: position.lng + 0.85, priority: position.priority };
-                } else if (normalizedName.includes('valle')) {
-                    finalPosition = { lat: bounds.getNorth() - 0.3, lng: center.lng, priority: position.priority };
-                }
-                
-                // Store final position for this region
-                regionFinalPositions[normalizedName] = finalPosition;
-            });
-            
-            // Second iteration: apply adjustments for regions that depend on others
-            regionData.forEach(({ feature, layer, bounds, regionName, normalizedName, center, position }) => {
-                let finalPosition = regionFinalPositions[normalizedName] || { ...position };
-                const labelWidth = regionPositions[normalizedName]?.labelWidth || getLabelWidth(regionName);
-                let positionChanged = false;
-                
-                // Apply specific label adjustments that depend on other regions
-                if (normalizedName.includes('piemonte')) {
-                    // Piemonte: posiziona la label al centro della regione
-                    finalPosition = { 
-                        lat: center.lat, 
-                        lng: center.lng, 
-                        priority: position.priority 
-                    };
-                    positionChanged = true;
-                } else if (normalizedName.includes('liguria')) {
-                    // Liguria: all'altezza della scritta Toscana ma non muoverla orizzontalmente
-                    if (regionFinalPositions['toscana']) {
-                        finalPosition = { 
-                            lat: regionFinalPositions['toscana'].lat, 
-                            lng: regionPositions['liguria'].lng, // Mantieni la longitudine originale
-                            priority: position.priority 
-                        };
-                        positionChanged = true;
-                    }
-                } else if (normalizedName.includes('marche')) {
-                    // Marche: stessa altezza (latitudine) della scritta Umbria, spostata ~9px a destra
-                    // 9px ≈ 3 * px3ToDegrees
-                    if (regionFinalPositions['umbria']) {
-                        const currentMarcheLng = regionFinalPositions['marche']?.lng || position.lng;
-                        finalPosition = { 
-                            lat: regionFinalPositions['umbria'].lat,
-                            lng: currentMarcheLng + (px3ToDegrees * 50),
-                            priority: position.priority 
-                        };
-                        positionChanged = true;
+                // Get manual adjustment if exists
+                let adjustment = { lat: 0, lng: 0 };
+                for (const [key, value] of Object.entries(regionAdjustments)) {
+                    if (normalizedName.includes(key)) {
+                        adjustment = value;
+                        break;
                     }
                 }
                 
-                // Update final position if it was changed in this iteration
-                if (positionChanged) {
-                    regionFinalPositions[normalizedName] = finalPosition;
-                }
-            });
-            
-            // Third pass: final collision check and create markers for all regions
-            regionData.forEach(({ feature, layer, bounds, regionName, normalizedName, center, position }) => {
-                let finalPosition = regionFinalPositions[normalizedName] || { ...position };
-                const labelWidth = regionPositions[normalizedName]?.labelWidth || getLabelWidth(regionName);
-                
-                // Final collision check: if the adjusted position still collides, try alternative positions
-                if (checkCollision(finalPosition.lat, finalPosition.lng, labelWidth)) {
-                    // Try to find a better position by adjusting slightly
-                    const adjustments = [
-                        { lat: 0.1, lng: 0 }, { lat: -0.1, lng: 0 },
-                        { lat: 0, lng: 0.15 }, { lat: 0, lng: -0.15 },
-                        { lat: 0.15, lng: 0.15 }, { lat: -0.15, lng: -0.15 },
-                        { lat: 0.15, lng: -0.15 }, { lat: -0.15, lng: 0.15 },
-                        { lat: 0.2, lng: 0 }, { lat: -0.2, lng: 0 },
-                        { lat: 0, lng: 0.25 }, { lat: 0, lng: -0.25 }
-                    ];
-                    
-                    let foundPosition = false;
-                    for (const adj of adjustments) {
-                        const testPos = { 
-                            lat: finalPosition.lat + adj.lat, 
-                            lng: finalPosition.lng + adj.lng,
-                            priority: finalPosition.priority 
-                        };
-                        if (!checkCollision(testPos.lat, testPos.lng, labelWidth)) {
-                            finalPosition = testPos;
-                            foundPosition = true;
-                            break;
-                        }
-                    }
-                    
-                    // If still colliding, use the original optimal position
-                    if (!foundPosition) {
-                        finalPosition = position;
-                    }
-                }
-                
-                // Record this label position
-                placedLabels.push({
-                    lat: finalPosition.lat,
-                    lng: finalPosition.lng,
-                    name: regionName
-                });
+                // Calculate final position (center + adjustment)
+                const finalLat = center.lat + adjustment.lat;
+                const finalLng = center.lng + adjustment.lng;
                 
                 // Calculate icon size based on text length
+                const labelWidth = getLabelWidth(regionName);
                 const iconSize = [labelWidth, 30];
                 
                 // Create custom icon for label
@@ -5892,14 +5658,14 @@ function initInteractiveMap() {
                     iconAnchor: [iconSize[0] / 2, iconSize[1] / 2]
                 });
                 
-                // Create marker for label using finalPosition
-                const labelMarker = L.marker([finalPosition.lat, finalPosition.lng], {
+                // Create marker for label at centered position
+                const labelMarker = L.marker([finalLat, finalLng], {
                     icon: labelIcon,
                     interactive: false,
                     zIndexOffset: 1000
                 });
                 
-                // Add to labels layer (no connecting lines - labels are inside regions)
+                // Add to labels layer
                 window.mobileRegionLabelsLayer.addLayer(labelMarker);
             });
         }
@@ -6128,10 +5894,16 @@ function initInteractiveMap() {
                 if (mapWinesContainer) {
                     mapWinesContainer.classList.add('wines-cards-expanded');
                 }
-                // Update height for iPhone Safari
+                // Update height for iPhone Safari - multiple attempts to ensure it works
                 setTimeout(() => {
                     updateMobileWinesCardsHeight();
-                }, 100);
+                }, 50);
+                setTimeout(() => {
+                    updateMobileWinesCardsHeight();
+                }, 200);
+                setTimeout(() => {
+                    updateMobileWinesCardsHeight();
+                }, 500);
                 if (winesTitle) {
                     const typeName = wineType ? getWineTypeName(wineType) : 'All';
                     winesTitle.textContent = `${regionName} - ${typeName}`;
@@ -6762,7 +6534,7 @@ function initInteractiveMap() {
                                    class="mobile-search-input" 
                                    placeholder="Search varietals (e.g., sangiovese)" 
                                    autocomplete="off"
-                                   style="width: 100%; padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid rgba(212, 175, 55, 0.3); background: rgba(0, 0, 0, 0.5); color: #F5F5F0; border-radius: 4px; font-family: 'Inter', sans-serif;">
+                                   style="width: 100%; padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid rgba(212, 175, 55, 0.3); background: rgba(0, 0, 0, 0.5); color: #F2F2F2; border-radius: 4px; font-family: var(--font-body, 'Cormorant', serif);">
                         </div>
                     `;
                     winesHeader.insertBefore(searchContainer, winesHeader.firstChild);
@@ -7146,6 +6918,7 @@ function initInteractiveMap() {
             const winesTitle = document.getElementById('mobileWinesCardsTitle');
             const backBtn = document.getElementById('mobileBackToMapBtn');
             const typeFiltersContainer = document.getElementById('mobileWinesCardsTypeFilters');
+            const winesHeader = document.querySelector('.mobile-wines-cards-header');
             
             if (!mapView || !winesContainer || !winesGrid || !window.wineApp) return;
             
@@ -7170,6 +6943,23 @@ function initInteractiveMap() {
                     } else if (filterType === 'fancy') {
                         winesTitle.textContent = 'Feeling Fancy';
                     }
+                }
+
+                // Remove existing organic description if any
+                const existingDescription = winesHeader?.querySelector('.mobile-wines-cards-organic-description');
+                if (existingDescription) {
+                    existingDescription.remove();
+                }
+
+                // Add organic description in header if filterType is organic
+                if (filterType === 'organic' && winesHeader) {
+                    const organicDescription = document.createElement('div');
+                    organicDescription.className = 'mobile-wines-cards-organic-description';
+                    organicDescription.innerHTML = `
+                        <div class="mobile-wines-cards-organic-description-title">Organic Wine</div>
+                        <div class="mobile-wines-cards-organic-description-text">Organic wines are made from grapes grown without synthetic pesticides, herbicides, or fertilizers. The winemaking process follows strict organic standards, ensuring a more natural and environmentally friendly product.</div>
+                    `;
+                    winesHeader.appendChild(organicDescription);
                 }
                 
                 // Filter wines based on filter type
@@ -7297,6 +7087,12 @@ function initInteractiveMap() {
                         if (mapWinesContainer) {
                             mapWinesContainer.classList.remove('wines-cards-expanded');
                         }
+                        // Remove organic description when going back
+                        const winesHeader = document.querySelector('.mobile-wines-cards-header');
+                        const existingDescription = winesHeader?.querySelector('.mobile-wines-cards-organic-description');
+                        if (existingDescription) {
+                            existingDescription.remove();
+                        }
                         winesContainer.style.height = '';
                         winesContainer.style.maxHeight = '';
                         winesContainer.style.minHeight = '';
@@ -7316,6 +7112,7 @@ function initInteractiveMap() {
             const winesTitle = document.getElementById('mobileWinesCardsTitle');
             const backBtn = document.getElementById('mobileBackToMapBtn');
             const typeFiltersContainer = document.getElementById('mobileWinesCardsTypeFilters');
+            const winesHeader = document.querySelector('.mobile-wines-cards-header');
             
             if (!mapView || !winesContainer || !winesGrid || !window.wineApp) return;
             
@@ -7341,6 +7138,29 @@ function initInteractiveMap() {
                     } else if (filterType === 'fancy') {
                         winesTitle.textContent = `Fellenig Fancy - ${typeName}`;
                     }
+                }
+
+                // Remove existing organic description if any
+                const existingDescription = winesHeader?.querySelector('.mobile-wines-cards-organic-description');
+                if (existingDescription) {
+                    existingDescription.remove();
+                }
+
+                // Add organic description in header if filterType is organic
+                if (filterType === 'organic' && winesHeader) {
+                    const organicDescription = document.createElement('div');
+                    organicDescription.className = 'mobile-wines-cards-organic-description';
+                    organicDescription.innerHTML = `
+                        <div class="mobile-wines-cards-organic-description-title">Organic Wine</div>
+                        <div class="mobile-wines-cards-organic-description-text">Organic wines are made from grapes grown without synthetic pesticides, herbicides, or fertilizers. The winemaking process follows strict organic standards, ensuring a more natural and environmentally friendly product.</div>
+                    `;
+                    winesHeader.appendChild(organicDescription);
+                    // Setup scroll listener to hide organic description when user scrolls
+                    setTimeout(() => {
+                        if (window.setupOrganicDescriptionScrollListener) {
+                            window.setupOrganicDescriptionScrollListener();
+                        }
+                    }, 100);
                 }
                 
                 // Filter wines based on filter type and wine type
@@ -7470,6 +7290,12 @@ function initInteractiveMap() {
                         const mapWinesContainer = document.getElementById('mobileMapWinesContainer');
                         if (mapWinesContainer) {
                             mapWinesContainer.classList.remove('wines-cards-expanded');
+                        }
+                        // Remove organic description when going back
+                        const winesHeader = document.querySelector('.mobile-wines-cards-header');
+                        const existingDescription = winesHeader?.querySelector('.mobile-wines-cards-organic-description');
+                        if (existingDescription) {
+                            existingDescription.remove();
                         }
                         winesContainer.style.height = '';
                         winesContainer.style.maxHeight = '';
@@ -7945,18 +7771,87 @@ function initInteractiveMap() {
                 return;
             }
             
-            // Hide map and show wines list - they should occupy the same space
+            // Keep map visible underneath wines list as background
             if (mapWrapper) {
-                console.log('🗺️ Hiding map wrapper');
-                mapWrapper.style.setProperty('display', 'none', 'important');
+                console.log('🗺️ Keeping map visible as background');
+                // Keep map visible but make it non-interactive
+                mapWrapper.style.setProperty('display', 'flex', 'important');
+                mapWrapper.style.setProperty('position', 'absolute', 'important');
+                mapWrapper.style.setProperty('top', '0', 'important');
+                mapWrapper.style.setProperty('left', '0', 'important');
+                mapWrapper.style.setProperty('right', '0', 'important');
+                mapWrapper.style.setProperty('bottom', '0', 'important');
+                mapWrapper.style.setProperty('z-index', '0', 'important');
+                mapWrapper.style.setProperty('pointer-events', 'none', 'important');
             }
-            console.log('📋 Showing wines list container');
-            // Use !important to override CSS rule and make it take the map's place
+            
+            // Apply zoom to map on tablet when wines list opens (only on tablet: 820px-1023px)
+            const isTablet = window.innerWidth >= 820 && window.innerWidth < 1024;
+            if (isTablet && mapInstance && exactRegionName && geoJsonLayer) {
+                console.log('📱 Tablet detected - applying zoom to region:', exactRegionName);
+                
+                // Store original zoom and center if not already stored
+                if (originalMapZoom === null || originalMapCenter === null) {
+                    originalMapZoom = mapInstance.getZoom();
+                    originalMapCenter = mapInstance.getCenter();
+                }
+                
+                // Find the layer for the selected region
+                let targetLayer = null;
+                geoJsonLayer.eachLayer(function(layer) {
+                    const layerRegionName = layer._regionName || '';
+                    // Try to match region name (case-insensitive, handle variations)
+                    if (layerRegionName && (
+                        layerRegionName.toLowerCase() === exactRegionName.toLowerCase() ||
+                        layerRegionName.toLowerCase().includes(exactRegionName.toLowerCase()) ||
+                        exactRegionName.toLowerCase().includes(layerRegionName.toLowerCase())
+                    )) {
+                        targetLayer = layer;
+                    }
+                });
+                
+                if (targetLayer) {
+                    // Get bounds of the selected region
+                    const bounds = targetLayer.getBounds();
+                    
+                    // Apply zoom - "quasi il doppio" means almost double zoom
+                    // Current zoom is typically 6, so we want to zoom in significantly
+                    // Using fitBounds with minimal padding to zoom in as much as possible
+                    // Then optionally increase zoom level further
+                    setTimeout(() => {
+                        // First, fit bounds with minimal padding for maximum zoom
+                        mapInstance.fitBounds(bounds, { 
+                            padding: [10, 10], // Minimal padding for maximum zoom
+                            maxZoom: 8 // Respect maxZoom limit
+                        });
+                        
+                        // Then increase zoom level further (almost double)
+                        // If current zoom is 6, we want ~11-12, but maxZoom is 8
+                        // So we'll set zoom to maxZoom (8) which is the maximum allowed
+                        const currentZoom = mapInstance.getZoom();
+                        const targetZoom = Math.min(8, currentZoom * 1.8); // Almost double, capped at maxZoom
+                        
+                        if (targetZoom > currentZoom) {
+                            mapInstance.setZoom(targetZoom, {
+                                animate: true,
+                                duration: 0.6 // Smooth animation
+                            });
+                        }
+                        
+                        console.log('✅ Zoom applied to region:', exactRegionName, 'from', currentZoom, 'to', targetZoom);
+                    }, 100);
+                } else {
+                    console.warn('⚠️ Could not find layer for region:', exactRegionName);
+                }
+            }
+            console.log('📋 Showing wines list container over map');
+            // Show wines list as overlay above map
             winesListContainer.style.setProperty('display', 'flex', 'important');
             winesListContainer.style.setProperty('position', 'relative', 'important');
             winesListContainer.style.setProperty('width', '100%', 'important');
             winesListContainer.style.setProperty('height', '100%', 'important');
             winesListContainer.style.setProperty('flex', '1', 'important');
+            winesListContainer.style.setProperty('z-index', '2', 'important');
             
             // Ensure wines grid container is visible
             if (winesGridContainer) {
@@ -8256,13 +8151,21 @@ function initInteractiveMap() {
                 return;
             }
             
-            // Hide map and show wines list
+            // Keep map visible underneath wines list as background
             if (mapWrapper) {
-                mapWrapper.style.setProperty('display', 'none', 'important');
+                mapWrapper.style.setProperty('display', 'flex', 'important');
+                mapWrapper.style.setProperty('position', 'absolute', 'important');
+                mapWrapper.style.setProperty('top', '0', 'important');
+                mapWrapper.style.setProperty('left', '0', 'important');
+                mapWrapper.style.setProperty('right', '0', 'important');
+                mapWrapper.style.setProperty('bottom', '0', 'important');
+                mapWrapper.style.setProperty('z-index', '0', 'important');
+                mapWrapper.style.setProperty('pointer-events', 'none', 'important');
             }
             winesListContainer.style.setProperty('display', 'flex', 'important');
             winesListContainer.style.setProperty('position', 'relative', 'important');
             winesListContainer.style.setProperty('width', '100%', 'important');
+            winesListContainer.style.setProperty('z-index', '2', 'important');
             winesListContainer.style.setProperty('height', '100%', 'important');
             winesListContainer.style.setProperty('flex', '1', 'important');
             
@@ -8519,9 +8422,16 @@ function initInteractiveMap() {
                 winesListContainer.style.setProperty('display', 'none', 'important');
             }
             
-            // Show map wrapper in the same space
+            // Restore map wrapper to normal position (not absolute overlay)
             if (mapWrapper) {
                 mapWrapper.style.setProperty('display', 'flex', 'important');
+                mapWrapper.style.setProperty('position', 'relative', 'important');
+                mapWrapper.style.removeProperty('top');
+                mapWrapper.style.removeProperty('left');
+                mapWrapper.style.removeProperty('right');
+                mapWrapper.style.removeProperty('bottom');
+                mapWrapper.style.setProperty('z-index', '1', 'important');
+                mapWrapper.style.setProperty('pointer-events', 'auto', 'important');
                 mapWrapper.style.setProperty('flex', '1', 'important');
                 mapWrapper.style.setProperty('width', '100%', 'important');
                 mapWrapper.style.setProperty('height', '100%', 'important');
@@ -8531,6 +8441,18 @@ function initInteractiveMap() {
             const regionInfo = document.getElementById('regionInfo');
             if (regionInfo) {
                 regionInfo.style.display = 'none';
+            }
+            
+            // Restore original zoom and center on tablet (only if we zoomed in)
+            const isTablet = window.innerWidth >= 820 && window.innerWidth < 1024;
+            if (isTablet && mapInstance && originalMapZoom !== null && originalMapCenter !== null) {
+                setTimeout(() => {
+                    mapInstance.setView(originalMapCenter, originalMapZoom, {
+                        animate: true,
+                        duration: 0.6
+                    });
+                    console.log('✅ Map zoom restored to original:', originalMapZoom);
+                }, 100);
             }
             
             // Reset selected region on map
@@ -9292,12 +9214,20 @@ function initInteractiveMap() {
             
             if (!winesGridContainer) return;
             
-            // Hide map, show results
+            // Keep map visible underneath search results as background
             if (mapWrapper) {
-                mapWrapper.style.display = 'none';
+                mapWrapper.style.setProperty('display', 'flex', 'important');
+                mapWrapper.style.setProperty('position', 'absolute', 'important');
+                mapWrapper.style.setProperty('top', '0', 'important');
+                mapWrapper.style.setProperty('left', '0', 'important');
+                mapWrapper.style.setProperty('right', '0', 'important');
+                mapWrapper.style.setProperty('bottom', '0', 'important');
+                mapWrapper.style.setProperty('z-index', '0', 'important');
+                mapWrapper.style.setProperty('pointer-events', 'none', 'important');
             }
             if (winesListContainer) {
-                winesListContainer.style.display = 'flex';
+                winesListContainer.style.setProperty('display', 'flex', 'important');
+                winesListContainer.style.setProperty('z-index', '2', 'important');
             }
             
             // Update title
@@ -9927,6 +9857,12 @@ function initInteractiveMap() {
                     if (mapView && winesContainer) {
                         mapView.style.display = 'flex';
                         winesContainer.style.display = 'none';
+                        // Remove organic description when going back
+                        const winesHeader = document.querySelector('.mobile-wines-cards-header');
+                        const existingDescription = winesHeader?.querySelector('.mobile-wines-cards-organic-description');
+                        if (existingDescription) {
+                            existingDescription.remove();
+                        }
                         setTimeout(() => {
                             updateMobileMapHeight();
                         }, 100);

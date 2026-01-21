@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestione Vini - Link Manager</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <style>
         * {
             margin: 0;
@@ -346,9 +348,41 @@
                 height: 90px;
             }
         }
+
+        /* Fixed Home Button */
+        .fixed-home-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.9) 0%, rgba(184, 134, 11, 0.9) 100%);
+            border: 2px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 175, 55, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .fixed-home-btn i {
+            font-size: 1.25rem;
+            color: #0a0a0a;
+        }
+        .fixed-home-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 1) 0%, rgba(184, 134, 11, 1) 100%);
+        }
     </style>
 </head>
 <body>
+    <!-- Fixed Home Button -->
+    <a href="./index.html" class="fixed-home-btn" aria-label="Back to Home">
+        <i class="fas fa-home"></i>
+    </a>
+
     <div class="container">
         <h1>🍷 Gestione Vini - Link Manager</h1>
         <p class="subtitle">Gestisci le immagini e i link dei vini</p>
@@ -590,7 +624,7 @@
 
                 row.innerHTML = `
                     <td>
-                        <img src="${wine.link}" alt="${wine.wineName}" class="wine-image" 
+                        <img src="${wine.link}" alt="${wine.wineName}" class="wine-image" loading="lazy" decoding="async"
                              onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27100%27 height=%27100%27%3E%3Crect fill=%27%23ddd%27 width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%25%27 y=%2750%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27%3ENo Image%3C/text%3E%3C/svg%3E'">
                     </td>
                     <td>
@@ -830,7 +864,7 @@
                     
                     row.innerHTML = `
                         <td>
-                            <img src="${wine.link}" alt="${wine.wineName}" class="wine-image" 
+                            <img src="${wine.link}" alt="${wine.wineName}" class="wine-image" loading="lazy" decoding="async"
                                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27100%27 height=%27100%27%3E%3Crect fill=%27%23ddd%27 width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%25%27 y=%2750%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%23999%27%3ENo Image%3C/text%3E%3C/svg%3E'">
                         </td>
                         <td>

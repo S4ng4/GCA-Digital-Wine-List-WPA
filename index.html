@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="GCA Wines">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="GCA Wines">
-    <meta name="msapplication-TileColor" content="#0A0A0A">
+    <meta name="msapplication-TileColor" content="#0E0E0E">
     <meta name="msapplication-TileImage" content="./image/icon-144x144.png">
     
     <!-- PWA Manifest -->
@@ -32,10 +32,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <!-- Font Awesome (HTTPS CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <!-- Google Fonts (HTTPS) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- Animate.css per effetti -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Google Fonts (HTTPS) - 2 fonts max for readability/perf -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Preload hero image (above-the-fold) -->
+    <link rel="preload" as="image" href="./image/secondFloor.webp" type="image/webp">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="./css/style.css">
     <style>
@@ -51,11 +51,10 @@
         }
 
         body.landing-page {
-            background-color: #0A0A0A;
+            background-color: #0E0E0E;
             color: var(--ivory);
             overflow-x: hidden;
             font-family: var(--font-body);
-            scroll-behavior: smooth;
         }
 
         /* Header - Logo rimosso, header minimale */
@@ -152,48 +151,6 @@
             object-fit: cover;
             object-position: center;
             filter: brightness(0.7) contrast(1.1);
-            animation: slowZoom 25s infinite alternate ease-in-out;
-        }
-
-        @keyframes slowZoom {
-            0% {
-                transform: scale(1);
-            }
-            100% {
-                transform: scale(1.1);
-            }
-        }
-
-        /* Particelle fluttuanti */
-        .floating-particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        .particle {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            background: var(--gold);
-            border-radius: 50%;
-            opacity: 0.3;
-            animation: float 15s infinite linear;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) translateX(0);
-                opacity: 0.3;
-            }
-            50% {
-                transform: translateY(-20px) translateX(10px);
-                opacity: 0.1;
-            }
         }
 
         /* Contenuto Hero */
@@ -560,14 +517,14 @@
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
             }
-            
-            .hero-background-image {
-                animation: none;
-            }
-            
-            .particle {
-                animation: none;
-                opacity: 0.1;
+        }
+
+        /* Touch devices: subtle tap feedback without hover lift */
+        @media (hover: none) and (pointer: coarse) {
+            .landing-button:hover,
+            .landing-button:active {
+                transform: scale(0.98);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
             }
         }
     </style>
@@ -582,11 +539,11 @@
     <section class="landing-hero">
         <!-- Background con animazione -->
         <div class="hero-background">
-            <img src="./image/secondFloor.png" alt="Gran Caffè L'Aquila Restaurant Interior" class="hero-background-image">
+            <picture>
+                <source srcset="./image/secondFloor.webp" type="image/webp">
+                <img src="./image/secondFloor.png" alt="Gran Caffè L'Aquila Restaurant Interior" class="hero-background-image" decoding="async" fetchpriority="high">
+            </picture>
         </div>
-        
-        <!-- Particelle fluttuanti -->
-        <div class="floating-particles" id="particles"></div>
         
         <!-- Contenuto -->
         <div class="landing-hero-content">
@@ -626,7 +583,7 @@
                 <!-- 3. Our Story -->
                 <a href="./OurStory.html" class="landing-button story">
                     <div class="landing-button-icon logo-icon">
-                        <img src="./image/logoFull.svg" alt="Gran Caffè L'Aquila Logo">
+                        <img src="./image/logoFull.svg" alt="Gran Caffè L'Aquila Logo" loading="lazy" decoding="async">
                     </div>
                     <div class="landing-button-content">
                         <div class="landing-button-title">Our Story</div>
@@ -650,139 +607,7 @@
     <!-- Scripts -->
     <script src="./js/main.js"></script>
     <script>
-        // RIMOSSO: Timer per nascondere header - header sempre visibile su tablet
-        // RIMOSSO: Auto-scroll automatico - migliora UX tablet
-
-        // Inizializza particelle fluttuanti
-        function initParticles() {
-            const particlesContainer = document.getElementById('particles');
-            // Più particelle su tablet
-            const particleCount = window.innerWidth < 768 ? 20 : 
-                                window.innerWidth < 1024 ? 50 : 40;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                // Posizione casuale
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                
-                // Ritardo animazione casuale
-                particle.style.animationDelay = `${Math.random() * 15}s`;
-                
-                // Dimensione casuale
-                const size = 1 + Math.random() * 3;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                
-                // Opacità casuale
-                particle.style.opacity = 0.2 + Math.random() * 0.3;
-                
-                particlesContainer.appendChild(particle);
-            }
-        }
-        
-        // Animazione on scroll
-        function initScrollAnimation() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            });
-            
-            document.querySelectorAll('.animate-on-scroll').forEach(element => {
-                observer.observe(element);
-            });
-        }
-        
-        // Effetto parallax per lo sfondo - solo su desktop
-        function initParallax() {
-            const background = document.querySelector('.hero-background-image');
-            
-            // Disabilita parallax su tablet per performance
-            if (!background || window.innerWidth < 1024) return;
-            
-            window.addEventListener('scroll', () => {
-                const scrolled = window.pageYOffset;
-                const rate = scrolled * -0.5;
-                background.style.transform = `translateY(${rate}px) scale(${1 + Math.abs(rate * 0.0001)})`;
-            });
-        }
-        
-        // Pulsante con effetto ripple - supporto touch
-        function initRippleButtons() {
-            const buttons = document.querySelectorAll('.landing-button');
-            
-            buttons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    const rect = this.getBoundingClientRect();
-                    const x = (e.clientX || (e.touches && e.touches[0]?.clientX) || 0) - rect.left;
-                    const y = (e.clientY || (e.touches && e.touches[0]?.clientY) || 0) - rect.top;
-                    
-                    const ripple = document.createElement('span');
-                    ripple.style.left = `${x}px`;
-                    ripple.style.top = `${y}px`;
-                    ripple.classList.add('ripple-effect');
-                    
-                    this.appendChild(ripple);
-                    
-                    setTimeout(() => {
-                        ripple.remove();
-                    }, 600);
-                });
-            });
-        }
-        
-        // Inizializza tutto quando il DOM è pronto
-        document.addEventListener('DOMContentLoaded', () => {
-            initParticles();
-            initScrollAnimation();
-            initParallax();
-            initRippleButtons();
-            
-            // RIMOSSO: startHideHeaderTimer() - header sempre visibile
-            // RIMOSSO: Auto-scroll
-            
-            // Aggiungi stile per l'effetto ripple
-            const style = document.createElement('style');
-            style.textContent = `
-                .ripple-effect {
-                    position: absolute;
-                    border-radius: 50%;
-                    background: rgba(212, 175, 55, 0.4);
-                    transform: scale(0);
-                    animation: ripple 0.6s linear;
-                    pointer-events: none;
-                }
-                
-                @keyframes ripple {
-                    to {
-                        transform: scale(4);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        });
-        
-        // Gestione resize finestra
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                const particlesContainer = document.getElementById('particles');
-                if (particlesContainer.children.length > 0) {
-                    particlesContainer.innerHTML = '';
-                    initParticles();
-                }
-            }, 250);
-        });
+        // Landing page: keep JS minimal to avoid reflows on tablet hardware.
     </script>
     
     <!-- Service Worker Registration -->

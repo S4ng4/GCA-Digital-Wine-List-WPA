@@ -105,8 +105,23 @@ function formatSubcategoryForDisplay(subcategory, wine) {
 }
 
 /**
+ * Estrae il prezzo numerico da un vino
+ */
+function getWinePriceNumber(wine) {
+    const price = wine.wine_price || wine.wine_price_bottle || wine.wine_price_glass;
+    if (!price || price === 'N/A') return Infinity; // Vini senza prezzo vanno alla fine
+    
+    // Rimuove il simbolo $ e altri caratteri non numerici, mantiene solo numeri e punto
+    const priceStr = String(price).replace(/[^0-9.]/g, '');
+    const priceNum = parseFloat(priceStr);
+    
+    return isNaN(priceNum) ? Infinity : priceNum;
+}
+
+/**
  * Raggruppa i vini per sub-categoria
  * Restituisce un array di oggetti con { subcategoryInfo, wines }
+ * I vini all'interno di ogni gruppo sono ordinati per prezzo crescente
  */
 function groupWinesBySubcategory(wines) {
     const groups = new Map();
@@ -129,6 +144,24 @@ function groupWinesBySubcategory(wines) {
             winesWithoutSubcategory.push(wine);
         }
     });
+    
+    // Ordina i vini per prezzo crescente all'interno di ogni gruppo
+    groups.forEach(group => {
+        group.wines.sort((a, b) => {
+            const priceA = getWinePriceNumber(a);
+            const priceB = getWinePriceNumber(b);
+            return priceA - priceB;
+        });
+    });
+    
+    // Ordina anche i vini senza sub-categoria per prezzo
+    if (winesWithoutSubcategory.length > 0) {
+        winesWithoutSubcategory.sort((a, b) => {
+            const priceA = getWinePriceNumber(a);
+            const priceB = getWinePriceNumber(b);
+            return priceA - priceB;
+        });
+    }
     
     // Converti la Map in array e ordina per nome sub-categoria
     const groupedArray = Array.from(groups.values()).sort((a, b) => 

@@ -43,6 +43,65 @@
     pointer-events: none;
 }
 
+/* Fixed Home Button - Top Right Corner */
+.fixed-home-btn {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.9) 0%, rgba(184, 134, 11, 0.9) 100%);
+    border: 2px solid rgba(212, 175, 55, 0.6);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 
+                0 0 20px rgba(212, 175, 55, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.fixed-home-btn i {
+    font-size: 1.25rem;
+    color: #0a0a0a;
+    transition: transform 0.3s ease;
+}
+
+.fixed-home-btn:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, rgba(212, 175, 55, 1) 0%, rgba(184, 134, 11, 1) 100%);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 
+                0 0 30px rgba(212, 175, 55, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.fixed-home-btn:hover i {
+    transform: scale(1.1);
+}
+
+.fixed-home-btn:active {
+    transform: scale(0.95);
+}
+
+/* Mobile adjustments for fixed home button */
+@media (max-width: 768px) {
+    .fixed-home-btn {
+        top: calc(0.75rem + env(safe-area-inset-top));
+        right: calc(0.75rem + env(safe-area-inset-right));
+        width: 44px;
+        height: 44px;
+    }
+    
+    .fixed-home-btn i {
+        font-size: 1.1rem;
+    }
+}
+
 .loading-content {
     display: flex;
     flex-direction: column;
@@ -136,6 +195,174 @@
     display: grid;
     place-items: center;
     margin-top: 1rem;
+}
+
+/* Chalkboard notes effect */
+.chalkboard-notes {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.chalk-note {
+    position: absolute;
+    opacity: 0;
+    transform: scale(0.8) rotate(-2deg);
+    animation: chalkAppear 0.8s ease-out forwards;
+    max-width: 280px;
+    padding: 1rem 1.25rem;
+    background: rgba(245, 245, 240, 0.95);
+    border-radius: 4px;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.chalk-note::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 2px,
+            rgba(0, 0, 0, 0.03) 4px
+        ),
+        radial-gradient(
+            circle at 20% 30%,
+            rgba(0, 0, 0, 0.05) 0%,
+            transparent 50%
+        ),
+        radial-gradient(
+            circle at 80% 70%,
+            rgba(0, 0, 0, 0.05) 0%,
+            transparent 50%
+        );
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.chalk-text {
+    font-family: 'Kalam', 'Comic Sans MS', cursive, sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: rgba(26, 26, 26, 0.9);
+    text-shadow: 
+        0 1px 0 rgba(255, 255, 255, 0.5),
+        0 -1px 0 rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.3px;
+    position: relative;
+    z-index: 1;
+}
+
+.chalk-note.note-1 {
+    top: 15%;
+    left: 5%;
+    animation-delay: 0.5s;
+    transform-origin: top left;
+}
+
+.chalk-note.note-2 {
+    top: 60%;
+    right: 8%;
+    animation-delay: 1s;
+    transform-origin: top right;
+    transform: scale(0.8) rotate(2deg);
+}
+
+.chalk-note.note-3 {
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8) rotate(-1deg);
+    animation-delay: 1.5s;
+    transform-origin: bottom center;
+}
+
+@keyframes chalkAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.6) rotate(-5deg);
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(var(--note-rotation, -2deg));
+    }
+}
+
+.chalk-note.note-2 {
+    --note-rotation: 2deg;
+}
+
+.chalk-note.note-3 {
+    --note-rotation: -1deg;
+}
+
+/* Mobile adjustments for chalk notes */
+@media (max-width: 768px) {
+    .chalk-note {
+        max-width: 200px;
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+    }
+    
+    .chalk-text {
+        font-size: 0.75rem;
+    }
+    
+    .chalk-note.note-1 {
+        top: 10%;
+        left: 3%;
+    }
+    
+    .chalk-note.note-2 {
+        top: 55%;
+        right: 5%;
+    }
+    
+    .chalk-note.note-3 {
+        bottom: 15%;
+        max-width: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chalk-note {
+        max-width: 160px;
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .chalk-text {
+        font-size: 0.7rem;
+        line-height: 1.3;
+    }
+    
+    .chalk-note.note-1 {
+        top: 8%;
+        left: 2%;
+    }
+    
+    .chalk-note.note-2 {
+        top: 50%;
+        right: 3%;
+    }
+    
+    .chalk-note.note-3 {
+        bottom: 12%;
+        max-width: 150px;
+    }
 }
 
 .countdown-ring { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
@@ -265,11 +492,11 @@
     --gold: #D4AF37;
     --gold-light: #F4CF67; /* Lighter gold for hover states */
     --dark-gold: #B8860B;
-    --black: #0A0A0A;
-    --dark: #0A0A0A; /* Alias for black */
+    --black: #0E0E0E;
+    --dark: #0E0E0E; /* Alias for black */
     --charcoal: #1A1A1A;
-    --ivory: #F5F5F0;
-    --cream: #F8F8F0;
+    --ivory: #F2F2F2;
+    --cream: #F5F4EE;
     
     /* === COLORI TESTO WCAG COMPLIANT === */
     --text-accent: var(--ivory);      /* Testo normale - alto contrasto */
@@ -312,10 +539,10 @@
 
 /* Night Mode (default) */
 :root[data-theme="night"] {
-    --bg-primary: #0A0A0A;
+    --bg-primary: #0E0E0E;
     --bg-secondary: #1A1A1A;
-    --text-primary: #F5F5F0;
-    --text-secondary: rgba(245, 245, 240, 0.8);
+    --text-primary: #F2F2F2;
+    --text-secondary: rgba(242, 242, 242, 0.78);
     --border-color: rgba(212, 175, 55, 0.3);
     --shadow-color: rgba(0, 0, 0, 0.8);
     --overlay-color: rgba(0, 0, 0, 0.85);
@@ -350,9 +577,9 @@
 
 body {
     font-family: var(--font-body, 'Cormorant', serif);
-    background-color: #0A0A0A !important; /* Colore uniforme per tutto il background */
+    background-color: var(--bg-primary, #0E0E0E); /* Dark mode base for low-light rooms */
     color: var(--text-primary, var(--ivory));
-    line-height: 1.6;
+    line-height: 1.55;
     min-height: 100vh;
     overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -423,9 +650,13 @@ body:not(.home-page) {
     transition: background 0.3s ease;
     /* Sfondo con immagine gcaLogoWall */
     background-image: url('./image/gcaLogoWall.jpeg');
+    background-image: image-set(
+        url('./image/gcaLogoWall.webp') type('image/webp'),
+        url('./image/gcaLogoWall.jpeg') type('image/jpeg')
+    );
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
+    background-attachment: scroll;
     background-repeat: no-repeat;
 }
 
@@ -469,9 +700,13 @@ body:not(.home-page) {
     background: var(--bg-primary);
     /* Mantieni immagine di sfondo anche in day mode ma con overlay più chiaro */
     background-image: url('./image/gcaLogoWall.jpeg');
+    background-image: image-set(
+        url('./image/gcaLogoWall.webp') type('image/webp'),
+        url('./image/gcaLogoWall.jpeg') type('image/jpeg')
+    );
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
+    background-attachment: scroll;
     background-repeat: no-repeat;
 }
 
@@ -3454,7 +3689,7 @@ body:not(.home-page) .luxury-container {
     min-height: 500px; /* Ensure map has minimum height */
     flex: 1;
     z-index: 1;
-    background: #0A0A0A !important;
+    background: #0E0E0E !important;
     border-radius: 0;
     overflow: hidden;
 }
@@ -3470,7 +3705,7 @@ body:not(.home-page) .luxury-container {
 }
 
 .leaflet-container {
-    background: #0A0A0A !important;
+    background: #0E0E0E !important;
 }
 
 /* Day mode styles for general leaflet container */
@@ -3702,10 +3937,7 @@ body:not(.home-page) .luxury-container {
         left: 0;
         right: 0;
         z-index: 190;
-        background: linear-gradient(180deg, rgba(26, 26, 26, 0.98) 0%, rgba(10, 10, 10, 0.98) 100%);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        background: transparent;
         padding: 1rem 1.25rem;
     }
     
@@ -3952,7 +4184,11 @@ body:not(.home-page) .luxury-container {
         right: 0 !important;
         bottom: 0 !important;
         z-index: 50 !important;
-        padding-top: calc(var(--mobile-nav-height) + var(--mobile-search-height)) !important; /* Nav + search bar (fino ai pulsanti) */
+        padding-top: var(--mobile-nav-height) !important; /* Solo nav, search bar nascosta */
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
     }
     
     /* Nascondi wine type selector quando wines-cards-expanded è attivo */
@@ -3960,9 +4196,15 @@ body:not(.home-page) .luxury-container {
         display: none !important;
     }
     
+    /* Nascondi search bar quando wines-cards-expanded è attivo */
+    body:has(.mobile-map-wines-container.wines-cards-expanded) .mobile-search-bar-container {
+        display: none !important;
+    }
+    
     /* Assicura che mobile-wines-cards-header parta subito dopo i pulsanti */
     .mobile-map-wines-container.wines-cards-expanded .mobile-wines-cards-header {
         margin-top: 0 !important;
+        padding-top: 1.25rem !important;
     }
     
     /* Mobile map wrapper unificato */
@@ -4119,7 +4361,7 @@ body:not(.home-page) .luxury-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background: #0A0A0A !important; /* Colore uniforme per tutto il background */
+    background: #0E0E0E !important; /* Colore uniforme per tutto il background */
     width: 100vw;
     overflow: hidden;
     position: relative;
@@ -4202,9 +4444,10 @@ body:not(.home-page) .luxury-container {
     display: flex;
     flex: 1;
     overflow: hidden;
-    background: #0A0A0A !important; /* Colore uniforme per tutto il background */
+    background: #0E0E0E !important; /* Colore uniforme per tutto il background */
     gap: 0;
     min-height: 500px; /* Ensure content wrapper has minimum height */
+    position: relative; /* Allow absolute positioning of map when wines list is visible */
 }
 
 /* When wines list is hidden (default), map takes full space */
@@ -4246,18 +4489,27 @@ body:not(.home-page) .luxury-container {
     }
 }
 
-/* When wines list is shown, hide map */
+/* When wines list is shown, keep map visible underneath as background */
 .wines-list-container[style*="display: flex"] ~ .map-wrapper,
 .wines-list-container[style*="display: block"] ~ .map-wrapper,
 .wines-list-container[style*="display: flex"] + .map-wrapper,
 .wines-list-container[style*="display: block"] + .map-wrapper {
-    display: none !important;
+    display: flex !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none; /* Allow clicks to pass through to wines list */
 }
 
-/* Ensure wines list container takes full space when visible */
+/* Ensure wines list container takes full space when visible and is positioned above map */
 .wines-list-container[style*="display: flex"],
 .wines-list-container[style*="display: block"] {
     flex: 1 !important;
+    position: relative;
+    z-index: 2;
     width: 100% !important;
     height: 100% !important;
     position: relative !important;
@@ -5213,7 +5465,7 @@ body:not(.home-page) .luxury-container {
     height: 100%;
     min-height: 500px; /* Ensure map has minimum height */
     z-index: 1;
-    background: #0A0A0A !important;
+    background: #0E0E0E !important;
 }
 
 /* Day mode styles for #map in this section */
@@ -5222,17 +5474,26 @@ body:not(.home-page) .luxury-container {
 }
 
 /* ==================== WINES LIST CONTAINER ==================== */
+/* 
+ * When wines list is visible, it appears as an overlay above the map.
+ * The map remains visible underneath with a semi-transparent backdrop.
+ * This provides spatial context while browsing wines.
+ */
 .wines-list-container {
     flex: 1;
     /* display: none is set in base rules above - hidden by default */
     flex-direction: column;
     overflow: hidden;
-    background: linear-gradient(180deg, rgba(26, 26, 26, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
+    /* Semi-transparent overlay to show map underneath - allows map to be visible */
+    background: linear-gradient(180deg, rgba(14, 14, 14, 0.85) 0%, rgba(14, 14, 14, 0.90) 100%);
+    backdrop-filter: blur(6px) saturate(110%);
+    -webkit-backdrop-filter: blur(6px) saturate(110%);
     position: relative;
+    z-index: 2;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-attachment: scroll;
 }
 
 .wines-list-container > * {
@@ -5564,7 +5825,7 @@ body:not(.home-page) .luxury-container {
 }
 
 .leaflet-container {
-    background: #0A0A0A !important;
+    background: #0E0E0E !important;
 }
 
 /* Day mode styles for .leaflet-container in this section */
@@ -6609,32 +6870,41 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
     width: 100%;
 }
 
+.mobile-menu-search-popup-quick-buttons {
+    padding: 0;
+}
+
 .mobile-menu-search-popup-quick-btn {
     flex: 1;
-    padding: 0.75rem 1rem;
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    padding: 0.5rem 0.75rem;
+    background: rgba(26, 26, 26, 0.6);
+    border: 1px solid rgba(245, 245, 240, 0.2);
     border-radius: 6px;
-    color: var(--gold);
-    font-size: 0.9rem;
-    font-weight: 500;
+    color: rgba(245, 245, 240, 0.9);
+    font-size: 0.75rem;
+    font-weight: 600;
     font-family: var(--font-body);
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
+    position: relative;
+    overflow: visible;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    min-height: 36px;
 }
 
 .mobile-menu-search-popup-quick-btn:active {
-    background: rgba(212, 175, 55, 0.2);
-    border-color: rgba(212, 175, 55, 0.5);
+    background: rgba(26, 26, 26, 0.8);
+    border-color: rgba(245, 245, 240, 0.4);
     transform: scale(0.97);
 }
 
 .mobile-menu-search-popup-quick-btn.active {
-    background: rgba(212, 175, 55, 0.25);
-    border-color: var(--gold);
-    box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+    background: rgba(26, 26, 26, 0.8);
+    border-color: rgba(245, 245, 240, 0.4);
+    color: rgba(245, 245, 240, 1);
 }
+
 
 .mobile-menu-categories {
     padding: 1rem 0;
@@ -7106,7 +7376,11 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         right: 0 !important;
         bottom: 0 !important;
         z-index: 50 !important;
-        padding-top: calc(var(--mobile-nav-height) + var(--mobile-search-height)) !important; /* Nav + search bar (fino ai pulsanti) */
+        padding-top: var(--mobile-nav-height) !important; /* Solo nav, search bar nascosta */
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
     }
     
     /* Nascondi wine type selector quando wines-cards-expanded è attivo */
@@ -7114,9 +7388,15 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         display: none !important;
     }
     
+    /* Nascondi search bar quando wines-cards-expanded è attivo */
+    body:has(.mobile-map-wines-container.wines-cards-expanded) .mobile-search-bar-container {
+        display: none !important;
+    }
+    
     /* Assicura che mobile-wines-cards-header parta subito dopo i pulsanti */
     .mobile-map-wines-container.wines-cards-expanded .mobile-wines-cards-header {
         margin-top: 0 !important;
+        padding-top: 1.25rem !important;
     }
 
     /* Hide desktop breadcrumb on mobile */
@@ -7230,10 +7510,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         left: 0;
         right: 0;
         z-index: 190;
-        background: linear-gradient(180deg, rgba(26, 26, 26, 0.98) 0%, rgba(10, 10, 10, 0.98) 100%);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        background: transparent;
         padding: 1rem 1.25rem;
         padding-left: calc(1.25rem + constant(safe-area-inset-left)); /* iOS 11.0-11.2 */
         padding-left: calc(1.25rem + env(safe-area-inset-left)); /* iOS 11.2+ */
@@ -7250,7 +7527,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         max-width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .mobile-search-input-wrapper {
@@ -7311,59 +7588,51 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
     /* Quick Search Buttons - Compact single line */
     .mobile-quick-search-buttons {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.4rem;
         width: 100%;
-        margin-top: 0.5rem;
+        margin-top: 0;
         flex-wrap: nowrap;
         justify-content: center;
+        padding: 0;
     }
 
     .mobile-quick-search-btn {
         flex: 0 1 auto;
         padding: 0.5rem 0.75rem;
-        background: rgba(212, 175, 55, 0.08);
-        border: 1px solid rgba(212, 175, 55, 0.2);
+        background: rgba(26, 26, 26, 0.6);
+        border: 1px solid rgba(245, 245, 240, 0.2);
         border-radius: 6px;
-        color: var(--gold);
+        color: rgba(245, 245, 240, 0.9);
         font-size: 0.75rem;
-        font-weight: 500;
+        font-weight: 600;
         font-family: var(--font-body);
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         text-align: center;
         position: relative;
-        overflow: hidden;
+        overflow: visible;
         white-space: nowrap;
         min-width: fit-content;
-    }
-
-    .mobile-quick-search-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
-        transition: left 0.5s;
-    }
-
-    .mobile-quick-search-btn:hover::before,
-    .mobile-quick-search-btn:active::before {
-        left: 100%;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
     .mobile-quick-search-btn:active {
-        background: rgba(212, 175, 55, 0.15);
-        border-color: rgba(212, 175, 55, 0.4);
-        transform: scale(0.97);
+        background: rgba(26, 26, 26, 0.8);
+        border-color: rgba(245, 245, 240, 0.4);
+        transform: scale(0.98);
     }
 
     .mobile-quick-search-btn.active {
-        background: rgba(212, 175, 55, 0.2);
-        border-color: var(--gold);
-        box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+        background: rgba(26, 26, 26, 0.8);
+        border-color: rgba(245, 245, 240, 0.4);
+        color: rgba(245, 245, 240, 1);
+        font-weight: 700;
     }
+
 
     .mobile-quick-search-btn span {
         position: relative;
@@ -7395,14 +7664,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         top: 50%;
         transform: translateY(-50%);
         z-index: 180; /* Inferiore a mobile-search-bar-container (190) */
-        background: linear-gradient(90deg, rgba(15, 15, 15, 0.98) 0%, rgba(20, 20, 20, 0.95) 100%);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4), 
-                    0 0 0 1px rgba(212, 175, 55, 0.2),
-                    inset -1px 0 0 rgba(255, 255, 255, 0.05);
-        border-right: 1px solid rgba(212, 175, 55, 0.25);
-        padding: 0.75rem 0.5rem; /* Padding normale, senza padding-top extra */
+        background: transparent;
         padding-left: calc(0.5rem + constant(safe-area-inset-left)); /* iOS 11.0-11.2 */
         padding-left: calc(0.5rem + env(safe-area-inset-left)); /* iOS 11.2+ */
         border-radius: 0 16px 16px 0;
@@ -8055,15 +8317,17 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
     }
 
     .mobile-region-label-text {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--gold, #D4AF37);
-        font-family: var(--font-body);
-        /* Effetto luminoso intenso per il testo */
-        text-shadow: 0 0 10px rgba(212, 175, 55, 1),
-                     0 0 20px rgba(212, 175, 55, 0.8),
-                     0 0 30px rgba(212, 175, 55, 0.6),
-                     0 2px 4px rgba(0, 0, 0, 0.9);
+        font-size: 1rem;
+        font-weight: 500;
+        color: #C9A227;
+        font-family: 'Cormorant Garamond', 'Times New Roman', Georgia, serif;
+        font-style: italic;
+        letter-spacing: 0.03em;
+        /* Ombra sottile per leggibilità su sfondo scuro */
+        text-shadow: 
+            1px 1px 2px rgba(0, 0, 0, 0.8),
+            -1px -1px 2px rgba(0, 0, 0, 0.5),
+            0 0 8px rgba(0, 0, 0, 0.6);
         white-space: nowrap;
         background: transparent !important;
         padding: 0;
@@ -8073,9 +8337,11 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
     }
 
     :root[data-theme="day"] .mobile-region-label-text {
-        color: var(--gold, #8B6914);
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8),
-                     0 0 4px rgba(255, 255, 255, 0.5);
+        color: #8B6914;
+        text-shadow: 
+            1px 1px 2px rgba(255, 255, 255, 0.9),
+            -1px -1px 2px rgba(255, 255, 255, 0.6),
+            0 0 6px rgba(255, 255, 255, 0.4);
         background: transparent !important;
     }
 
@@ -8162,7 +8428,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         width: 100%;
         height: 100%;
         min-height: 715px; /* Aumentato del 30% da 550px */
-        background: #0A0A0A !important;
+        background: #0E0E0E !important;
         overflow: visible !important;
         margin-left: 51px; /* Modificato margin-left a 51px */
         margin-top: 83px; /* Modificato margin-top a 83px */
@@ -8293,15 +8559,19 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         overflow: hidden;
         background: linear-gradient(180deg, rgba(30, 30, 28, 0.85), rgba(12, 12, 12, 0.8));
         transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        /* Fix for iPhone Safari - min-height will be set by JavaScript */
-        height: auto;
-        min-height: 0;
+        /* Occupa tutta l'altezza disponibile del viewport */
+        height: 100vh;
+        height: 100dvh; /* Dynamic viewport height per mobile browsers */
+        min-height: 100vh;
+        min-height: 100dvh;
         max-height: none;
-        /* Assicura che il container prenda tutta l'altezza disponibile su iPhone */
+        /* Assicura che il container prenda tutta l'altezza disponibile */
         position: relative;
         -webkit-overflow-scrolling: touch;
         /* Previene il collasso del container */
         flex-shrink: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     /* Smooth transition when switching between map and cards */
@@ -8315,6 +8585,13 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: linear-gradient(180deg, rgba(30, 30, 28, 0.98) 0%, rgba(12, 12, 12, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(245, 245, 240, 0.1);
     }
 
     .mobile-wines-cards-header-top {
@@ -8328,6 +8605,31 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         flex-wrap: wrap;
         gap: 0.5rem;
         margin-top: 0.5rem;
+    }
+
+    .mobile-wines-cards-organic-description {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(26, 26, 26, 0.6);
+        border-radius: 8px;
+        border: 1px solid rgba(245, 245, 240, 0.1);
+        transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+        overflow: hidden;
+    }
+
+    .mobile-wines-cards-organic-description-title {
+        font-weight: 700;
+        color: rgba(245, 245, 240, 0.95);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        font-family: var(--font-heading);
+    }
+
+    .mobile-wines-cards-organic-description-text {
+        color: rgba(245, 245, 240, 0.8);
+        font-size: 0.8rem;
+        line-height: 1.5;
+        font-family: var(--font-body);
     }
 
     .mobile-wine-type-filter-btn {
@@ -8436,6 +8738,9 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         /* Fix per iOS Safari vecchi - usa margin invece di gap */
         gap: 1.5rem;
         min-height: 0;
+        /* Si espande per riempire tutto lo spazio disponibile */
+        height: 100%;
+        max-height: none;
         align-content: start;
         /* Fix per iPhone - assicura che le card non vengano tagliate */
         box-sizing: border-box;
@@ -8443,6 +8748,12 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         contain: layout;
         /* Watermark logo background */
         position: relative;
+        /* Permette scroll sopra l'header */
+        z-index: 1;
+        /* Assicura che la griglia occupi tutto lo spazio disponibile */
+        width: 100%;
+        /* Responso dinamico ai cambiamenti */
+        will-change: scroll-position;
     }
     
     .mobile-wines-cards-grid::before {
@@ -8454,6 +8765,10 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         width: 400px;
         height: 400px;
         background-image: url('../image/gcaLogoWall.jpeg');
+        background-image: image-set(
+            url('../image/gcaLogoWall.webp') type('image/webp'),
+            url('../image/gcaLogoWall.jpeg') type('image/jpeg')
+        );
         background-position: center;
         background-repeat: no-repeat;
         background-size: contain;
@@ -8807,7 +9122,11 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         right: 0 !important;
         bottom: 0 !important;
         z-index: 50 !important;
-        padding-top: calc(var(--mobile-nav-height) + var(--mobile-search-height)) !important; /* Nav + search bar (fino ai pulsanti) */
+        padding-top: var(--mobile-nav-height) !important; /* Solo nav, search bar nascosta */
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
     }
     
     /* Nascondi wine type selector quando wines-cards-expanded è attivo */
@@ -8815,9 +9134,44 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         display: none !important;
     }
     
+    /* Nascondi search bar quando wines-cards-expanded è attivo */
+    body:has(.mobile-map-wines-container.wines-cards-expanded) .mobile-search-bar-container {
+        display: none !important;
+    }
+    
     /* Assicura che mobile-wines-cards-header parta subito dopo i pulsanti */
     .mobile-map-wines-container.wines-cards-expanded .mobile-wines-cards-header {
         margin-top: 0 !important;
+        padding-top: 1.25rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    /* Quando wines-cards-expanded è attivo, il container deve occupare tutta la pagina */
+    .mobile-map-wines-container.wines-cards-expanded .mobile-wines-cards-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        height: calc(100vh - var(--mobile-nav-height)) !important;
+        height: calc(100dvh - var(--mobile-nav-height)) !important;
+        min-height: calc(100vh - var(--mobile-nav-height)) !important;
+        min-height: calc(100dvh - var(--mobile-nav-height)) !important;
+        max-height: calc(100vh - var(--mobile-nav-height)) !important;
+        max-height: calc(100dvh - var(--mobile-nav-height)) !important;
+        overflow: hidden !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* La griglia deve riempire tutto lo spazio disponibile quando il container è espanso */
+    .mobile-map-wines-container.wines-cards-expanded .mobile-wines-cards-grid {
+        flex: 1 !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     /* Improve mobile wine type selector transitions - Card effect for tablet */
@@ -8987,7 +9341,11 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         right: 0 !important;
         bottom: 0 !important;
         z-index: 50 !important;
-        padding-top: calc(var(--mobile-nav-height) + var(--mobile-search-height)) !important; /* Nav + search bar (fino ai pulsanti) */
+        padding-top: var(--mobile-nav-height) !important; /* Solo nav, search bar nascosta */
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
     }
     
     /* Nascondi wine type selector quando wines-cards-expanded è attivo */
@@ -8995,9 +9353,15 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         display: none !important;
     }
     
+    /* Nascondi search bar quando wines-cards-expanded è attivo */
+    body:has(.mobile-map-wines-container.wines-cards-expanded) .mobile-search-bar-container {
+        display: none !important;
+    }
+    
     /* Assicura che mobile-wines-cards-header parta subito dopo i pulsanti */
     .mobile-map-wines-container.wines-cards-expanded .mobile-wines-cards-header {
         margin-top: 0 !important;
+        padding-top: 1.25rem !important;
     }
     
     /* Optimized for tablet TLC */
@@ -9141,7 +9505,11 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         right: 0 !important;
         bottom: 0 !important;
         z-index: 50 !important;
-        padding-top: calc(var(--mobile-nav-height) + var(--mobile-search-height)) !important; /* Nav + search bar (fino ai pulsanti) */
+        padding-top: var(--mobile-nav-height) !important; /* Solo nav, search bar nascosta */
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
     }
     
     /* Nascondi wine type selector quando wines-cards-expanded è attivo */
@@ -9149,9 +9517,15 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         display: none !important;
     }
     
+    /* Nascondi search bar quando wines-cards-expanded è attivo */
+    body:has(.mobile-map-wines-container.wines-cards-expanded) .mobile-search-bar-container {
+        display: none !important;
+    }
+    
     /* Assicura che mobile-wines-cards-header parta subito dopo i pulsanti */
     .mobile-map-wines-container.wines-cards-expanded .mobile-wines-cards-header {
         margin-top: 0 !important;
+        padding-top: 1.25rem !important;
     }
     
     /* Improved spacing for tablet */
@@ -9657,6 +10031,14 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         padding: 1.25rem 1rem;
         align-content: start;
         contain: layout;
+        /* Occupa tutto lo spazio disponibile */
+        height: 100%;
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     /* Desktop wines grid nascosto */
@@ -9692,9 +10074,11 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
     
     /* Label regioni ben visibili anche su schermi piccoli */
     .mobile-region-label-text {
-        font-size: 0.7rem !important;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7),
-                     0 0 6px rgba(0, 0, 0, 0.5);
+        font-size: 0.8rem !important;
+        text-shadow: 
+            1px 1px 2px rgba(0, 0, 0, 0.8),
+            -1px -1px 2px rgba(0, 0, 0, 0.5),
+            0 0 6px rgba(0, 0, 0, 0.5);
     }
     
     /* Wine cards - optimized spacing for small screens */
@@ -9726,6 +10110,14 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         padding: 1rem 0.875rem;
         align-content: start;
         contain: layout;
+        /* Occupa tutto lo spazio disponibile anche su schermi piccoli */
+        height: 100%;
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     /* Improved readability for wine cards on small screens */
@@ -9848,9 +10240,13 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         /* Fix per rendering su iOS */
         -webkit-transform: translateZ(0);
         transform: translateZ(0);
-        /* Assicura che il container non collassi su iOS */
+        /* Assicura che il container non collassi su iOS e si espanda */
         min-height: 0;
-        height: auto;
+        height: 100%;
+        max-height: none;
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
         /* Previene sovrapposizione delle card */
         grid-auto-rows: minmax(min-content, auto);
         contain: layout;
@@ -9859,16 +10255,24 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         padding-top: max(1rem, env(safe-area-inset-top)); /* iOS 11.2+ */
         padding-bottom: max(1rem, constant(safe-area-inset-bottom)); /* iOS 11.0-11.2 */
         padding-bottom: max(1rem, env(safe-area-inset-bottom)); /* iOS 11.2+ */
+        width: 100%;
+        box-sizing: border-box;
     }
     
     /* Fix per il container principale su iOS */
     .mobile-wines-cards-container {
         /* Assicura altezza corretta su iPhone */
+        height: 100vh;
+        height: 100dvh; /* Dynamic viewport height per iOS Safari */
         min-height: 100vh;
-        min-height: 100dvh; /* Dynamic viewport height per iOS Safari */
+        min-height: 100dvh;
+        max-height: 100vh;
+        max-height: 100dvh;
         /* Assicura che il container prenda tutta l'altezza disponibile */
         display: flex;
         flex-direction: column;
+        width: 100%;
+        box-sizing: border-box;
         position: relative;
     }
     
@@ -9909,13 +10313,13 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
     #mobileMap {
         visibility: visible !important;
         opacity: 1 !important;
-        background: #0A0A0A !important;
+        background: #0E0E0E !important;
         display: block !important;
     }
     
     /* Assicura che la mappa mobile sia sempre visibile */
     .mobile-map-view .leaflet-container {
-        background: #0A0A0A !important;
+        background: #0E0E0E !important;
         visibility: visible !important;
         opacity: 1 !important;
     }
@@ -9936,11 +10340,11 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
 
 /* Reset per garantire visualizzazione su iOS */
 .leaflet-container {
-    background: #0A0A0A !important;
+    background: #0E0E0E !important;
 }
 
 .mobile-map-view .leaflet-container {
-    background: #0A0A0A !important;
+    background: #0E0E0E !important;
 }
 
 /* Day mode styles */
@@ -9972,7 +10376,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
 
     /* Label regioni più grandi in portrait */
     .mobile-region-label-text {
-        font-size: 0.9rem !important;
+        font-size: 1rem !important;
     }
 
     /* Container query per schermi molto alti in portrait */
@@ -9983,7 +10387,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         }
         
         .mobile-region-label-text {
-            font-size: 0.85rem !important;
+            font-size: 0.95rem !important;
         }
     }
 }
@@ -10003,7 +10407,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
     
     /* Label regioni visibili anche in landscape */
     .mobile-region-label-text {
-        font-size: 0.7rem !important;
+        font-size: 0.8rem !important;
     }
     
     /* Ottimizza selettore verticale per landscape */
@@ -10047,7 +10451,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         }
         
         .mobile-region-label-text {
-            font-size: 0.75rem !important;
+            font-size: 0.85rem !important;
         }
     }
 }
@@ -10069,7 +10473,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
-        background: #0A0A0A !important;
+        background: #0E0E0E !important;
     }
     
     .leaflet-tile-pane {
@@ -10095,7 +10499,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
-        background: #0A0A0A !important;
+        background: #0E0E0E !important;
     }
     
     .leaflet-tile-pane {
@@ -10265,9 +10669,11 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
     
     /* Label regioni ottimizzate per telefoni piccoli */
     .mobile-region-label-text {
-        font-size: 0.68rem !important;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7),
-                     0 0 6px rgba(0, 0, 0, 0.5);
+        font-size: 0.75rem !important;
+        text-shadow: 
+            1px 1px 2px rgba(0, 0, 0, 0.8),
+            -1px -1px 2px rgba(0, 0, 0, 0.5),
+            0 0 5px rgba(0, 0, 0, 0.5);
     }
     
     .leaflet-control-zoom a {
@@ -10375,7 +10781,7 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
 
 :root[data-theme="day"] .wine-card .wine-name,
 :root[data-theme="day"] .wine-card .wine-price {
-    color: var(--text-primary, #0A0A0A) !important;
+    color: var(--text-primary, #0E0E0E) !important;
 }
 
 :root[data-theme="day"] * {
@@ -10905,4 +11311,185 @@ body:has(.mobile-side-menu.open) .mobile-wines-cards-grid .mobile-wine-card-grid
 
 .compare-wines-btn:active {
     transform: translateY(0) scale(0.97);
+}
+
+/* === Tablet performance + touch UX overrides === */
+:root {
+    --tap-scale: 0.98;
+    --tap-duration: 140ms;
+}
+
+button,
+.btn,
+.luxury-filter-btn,
+.filter-button,
+.landing-button,
+.fixed-home-btn,
+.back-button,
+.luxury-wine-card,
+.wine-card,
+.region-card,
+.category-card,
+.wine-card-sidebar,
+.mobile-wine-type-chip,
+.region-item {
+    min-height: 48px;
+    min-width: 48px;
+    touch-action: manipulation;
+}
+
+a,
+button,
+.btn,
+.luxury-filter-btn,
+.filter-button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Subtle tap feedback for touch-only devices */
+@media (hover: none) and (pointer: coarse) {
+    button:active,
+    .btn:active,
+    .luxury-filter-btn:active,
+    .filter-button:active,
+    .landing-button:active,
+    .luxury-wine-card:active,
+    .wine-card:active,
+    .region-card:active,
+    .category-card:active,
+    .wine-card-sidebar:active,
+    .mobile-wine-type-chip:active,
+    .region-item:active {
+        transform: scale(var(--tap-scale));
+        transition: transform var(--tap-duration) ease, box-shadow var(--tap-duration) ease;
+    }
+
+    .wine-card:hover,
+    .region-card:hover,
+    .category-card:hover,
+    .luxury-wine-card:hover,
+    .landing-button:hover {
+        transform: none;
+    }
+}
+
+/* ==================== ORIENTATION & DYNAMIC RESPONSIVE FIXES ==================== */
+/* Landscape orientation optimizations for mobile wines grid */
+@media (max-width: 1023px) and (orientation: landscape) {
+    .mobile-wines-cards-container {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+    
+    .mobile-wines-cards-grid {
+        height: 100%;
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .mobile-wines-cards-header {
+        padding: 0.75rem 1rem;
+        flex-shrink: 0;
+    }
+    
+    /* Reduce gap in landscape for better space utilization */
+    .mobile-wines-cards-grid {
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* Portrait orientation optimizations */
+@media (max-width: 1023px) and (orientation: portrait) {
+    .mobile-wines-cards-container {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+    
+    .mobile-wines-cards-grid {
+        height: 100%;
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
+/* Dynamic viewport height support for modern browsers */
+@supports (height: 100dvh) {
+    @media (max-width: 1023px) {
+        .mobile-wines-cards-container {
+            height: 100dvh !important;
+            min-height: 100dvh !important;
+            max-height: 100dvh !important;
+        }
+        
+        .mobile-wines-cards-grid {
+            /* Grid will expand to fill available space dynamically */
+            min-height: 0;
+            flex: 1;
+        }
+    }
+}
+
+/* Handle viewport resize dynamically */
+@media (max-width: 1023px) {
+    .mobile-wines-cards-container {
+        /* Enable smooth transitions on size changes */
+        transition: height 0.2s ease-out, width 0.2s ease-out;
+    }
+    
+    .mobile-wines-cards-grid {
+        /* Smooth scroll behavior */
+        scroll-behavior: smooth;
+        /* Optimize for touch scrolling */
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+}
+
+/* Reduce initial layout/paint work for long lists */
+.wine-grid,
+.wine-table,
+.wines-list-container,
+.region-grid,
+.category-grid {
+    content-visibility: auto;
+    contain-intrinsic-size: 600px 800px;
+}
+
+.wine-card,
+.region-card,
+.category-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 260px 320px;
+}
+
+/* Horizontal swipe areas feel stable and controllable */
+.mobile-wine-types-scroll,
+.mobile-quick-search-buttons,
+.wine-categories {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-snap-type: x proximity;
+}
+
+.mobile-wine-type-chip,
+.mobile-quick-search-btn {
+    scroll-snap-align: start;
+}
+
+/* Respect reduced motion across the UI */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
 }

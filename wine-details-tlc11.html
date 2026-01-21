@@ -11,7 +11,7 @@
             --gold: #D4AF37;
             --gold-light: #F4CF67;
             --dark-gold: #B8860B;
-            --black: #0A0A0A;
+            --black: #0E0E0E;
             --charcoal: #1A1A1A;
             --ivory: #F5F5F0;
             --cream: #F8F8F0;
@@ -495,9 +495,41 @@
         :root[data-theme="day"] .tlc11-share-wine-btn:hover {
             box-shadow: 0 8px 16px rgba(139, 105, 20, 0.2) !important;
         }
+
+        /* Fixed Home Button */
+        .fixed-home-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.9) 0%, rgba(184, 134, 11, 0.9) 100%);
+            border: 2px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 175, 55, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .fixed-home-btn i {
+            font-size: 1.25rem;
+            color: #0a0a0a;
+        }
+        .fixed-home-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 1) 0%, rgba(184, 134, 11, 1) 100%);
+        }
     </style>
 </head>
 <body>
+    <!-- Fixed Home Button -->
+    <a href="./index.html" class="fixed-home-btn" aria-label="Back to Home">
+        <i class="fas fa-home"></i>
+    </a>
+
     <div class="tlc11-container">
         <!-- Top Bar -->
         <div class="tlc11-top-bar">
@@ -506,7 +538,10 @@
                 <span>Back</span>
             </a>
             <div class="tlc11-logo" onclick="window.location.href='./index.html'">
-                <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="tlc11-logo-image">
+                <picture>
+                    <source srcset="./image/gcaLogo.webp" type="image/webp">
+                    <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="tlc11-logo-image" decoding="async">
+                </picture>
             </div>
             <h1 class="tlc11-top-title">WINE DETAILS</h1>
             <button class="tlc11-share-btn" id="tlc11ShareBtn">
@@ -519,7 +554,7 @@
         <div class="tlc11-image-section">
             <div class="tlc11-wine-image-container" id="tlc11WineImageContainer">
                 <i class="fas fa-wine-bottle tlc11-wine-bottle-icon" id="tlc11WineBottleIcon"></i>
-                <img id="tlc11WineBottleImage" src="" alt="Wine bottle" style="display: none;">
+                <img id="tlc11WineBottleImage" src="" alt="Wine bottle" style="display: none;" loading="lazy" decoding="async">
             </div>
         </div>
 
@@ -670,16 +705,13 @@
             }
         });
 
-        // Polling per verificare cambiamenti del tema
-        setInterval(function() {
-            const currentDayMode = localStorage.getItem('dayMode') === 'true';
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const expectedTheme = currentDayMode ? 'day' : 'night';
-            
-            if (currentTheme !== expectedTheme) {
+        // Re-apply theme when returning to the page (lighter than polling)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
                 applyTheme();
             }
-        }, 100);
+        });
+        window.addEventListener('pageshow', applyTheme);
 
         // TLC 11 Specific Initialization
         let currentWine = null;

@@ -9,7 +9,7 @@
     <!-- Font Awesome (HTTPS CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <!-- Google Fonts (HTTPS) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
     <!-- Leaflet CSS (HTTPS CDN) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <!-- Custom CSS -->
@@ -20,7 +20,10 @@
     <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
         <div class="loading-content">
             <div class="loading-logo">
-                <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="loading-logo-image">
+                <picture>
+                    <source srcset="./image/gcaLogo.webp" type="image/webp">
+                    <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="loading-logo-image" decoding="async">
+                </picture>
                 <div class="countdown-ring" aria-hidden="true">
                     <svg viewBox="0 0 120 120">
                         <defs>
@@ -43,6 +46,18 @@
                     <span class="red-bokeh"></span>
                     <span class="white-bokeh"></span>
                     <span class="green-bokeh"></span>
+                </div>
+            </div>
+            <!-- Chalkboard notes for user guidance -->
+            <div class="chalkboard-notes">
+                <div class="chalk-note note-1">
+                    <div class="chalk-text">Tap a region on the map to explore wines</div>
+                </div>
+                <div class="chalk-note note-2">
+                    <div class="chalk-text">Use the search bar to find wines by name, producer, or varietal</div>
+                </div>
+                <div class="chalk-note note-3">
+                    <div class="chalk-text">Scroll through wine cards to discover your favorites</div>
                 </div>
             </div>
         </div>
@@ -104,6 +119,11 @@
         </div>
     </div>
 
+    <!-- Fixed Home Button -->
+    <a href="./index.html" class="fixed-home-btn" aria-label="Back to Home">
+        <i class="fas fa-home"></i>
+    </a>
+
     <div class="main-layout">
         <!-- Top Navigation -->
         <nav class="top-nav">
@@ -115,7 +135,10 @@
             </button>
             
             <div class="logo" onclick="window.location.href='./index.html'">
-                <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="logo-image">
+                <picture>
+                    <source srcset="./image/gcaLogo.webp" type="image/webp">
+                    <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="logo-image" decoding="async">
+                </picture>
             </div>
             <div class="nav-title-section">
                 <h1 class="nav-title">Gran Caffè L'Aquila</h1>
@@ -275,7 +298,10 @@
                 <div class="wine-categories">
                     <div class="wine-card-sidebar" data-type="ROSSO">
                         <div class="wine-icon-sidebar">
-                            <img src="./image/glassRed.png" alt="Red wine icon">
+                            <picture>
+                                <source srcset="./image/glassRed.webp" type="image/webp">
+                                <img src="./image/glassRed.png" alt="Red wine icon" loading="lazy" decoding="async">
+                            </picture>
                         </div>
                         <div class="wine-card-title">Red Wines</div>
                         <div class="wine-card-subtitle">Bold & Complex</div>
@@ -284,7 +310,10 @@
 
                     <div class="wine-card-sidebar" data-type="BIANCO">
                         <div class="wine-icon-sidebar">
-                            <img src="./image/glassWhite.png" alt="White wine icon">
+                            <picture>
+                                <source srcset="./image/glassWhite.webp" type="image/webp">
+                                <img src="./image/glassWhite.png" alt="White wine icon" loading="lazy" decoding="async">
+                            </picture>
                         </div>
                         <div class="wine-card-title">White Wines</div>
                         <div class="wine-card-subtitle">Crisp & Refreshing</div>
@@ -293,7 +322,10 @@
 
                     <div class="wine-card-sidebar" data-type="ROSATO">
                         <div class="wine-icon-sidebar">
-                            <img src="./image/glRose.png" alt="Rosé wine icon">
+                            <picture>
+                                <source srcset="./image/glRose.webp" type="image/webp">
+                                <img src="./image/glRose.png" alt="Rosé wine icon" loading="lazy" decoding="async">
+                            </picture>
                         </div>
                         <div class="wine-card-title">Rosé Wines</div>
                         <div class="wine-card-subtitle">Elegant & Delicate</div>
@@ -302,7 +334,10 @@
 
                     <div class="wine-card-sidebar" data-type="ARANCIONE">
                         <div class="wine-icon-sidebar">
-                            <img src="./image/glArancione.png" alt="Orange wine icon">
+                            <picture>
+                                <source srcset="./image/glArancione.webp" type="image/webp">
+                                <img src="./image/glArancione.png" alt="Orange wine icon" loading="lazy" decoding="async">
+                            </picture>
                         </div>
                         <div class="wine-card-title">Orange Wines</div>
                         <div class="wine-card-subtitle">Skin-Contact Whites</div>
@@ -311,7 +346,10 @@
 
                     <div class="wine-card-sidebar" data-type="BOLLICINE">
                         <div class="wine-icon-sidebar">
-                            <img src="./image/glSparkling.png" alt="Sparkling wine icon">
+                            <picture>
+                                <source srcset="./image/glSparkling.webp" type="image/webp">
+                                <img src="./image/glSparkling.png" alt="Sparkling wine icon" loading="lazy" decoding="async">
+                            </picture>
                         </div>
                         <div class="wine-card-title">Sparkling</div>
                         <div class="wine-card-subtitle">Celebratory & Vibrant</div>
@@ -323,7 +361,10 @@
 
                     <div class="wine-card-sidebar" data-type="NON ALCOLICO">
                         <div class="wine-icon-sidebar">
-                            <img src="./image/gl00.png" alt="Non-alcoholic wine icon">
+                            <picture>
+                                <source srcset="./image/gl00.webp" type="image/webp">
+                                <img src="./image/gl00.png" alt="Non-alcoholic wine icon" loading="lazy" decoding="async">
+                            </picture>
                         </div>
                         <div class="wine-card-title">Non-Alcoholic</div>
                         <div class="wine-card-subtitle">Zero Alcohol Selection</div>

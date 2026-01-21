@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gran Caffè L'Aquila - Our Story</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&display=swap');
 
         :root {
             --bg-paper: #FDFBF7;
@@ -93,10 +93,14 @@
         body {
             background-color: #e0e0e0;
             background-image: url("./image/OldGca.jpg");
+            background-image: image-set(
+                url("./image/OldGca.webp") type("image/webp"),
+                url("./image/OldGca.jpg") type("image/jpeg")
+            );
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: fixed;
+            background-attachment: scroll;
             font-family: var(--font-body);
             margin: 0;
             padding: 20px;
@@ -243,9 +247,40 @@
                 line-height: 1.7;
             }
         }
+
+        /* Fixed Home Button */
+        .fixed-home-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.9) 0%, rgba(184, 134, 11, 0.9) 100%);
+            border: 2px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 175, 55, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .fixed-home-btn i {
+            font-size: 1.25rem;
+            color: #0a0a0a;
+        }
+        .fixed-home-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 1) 0%, rgba(184, 134, 11, 1) 100%);
+        }
     </style>
 </head>
 <body>
+    <!-- Fixed Home Button -->
+    <a href="./index.html" class="fixed-home-btn" aria-label="Back to Home">
+        <i class="fas fa-home"></i>
+    </a>
 
     <div class="menu-sheet">
         <header>
@@ -299,16 +334,13 @@
             }
         });
 
-        // Polling per verificare cambiamenti del tema
-        setInterval(function() {
-            const currentDayMode = localStorage.getItem('dayMode') === 'true';
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const expectedTheme = currentDayMode ? 'day' : 'night';
-            
-            if (currentTheme !== expectedTheme) {
+        // Re-apply theme when returning to the page (lighter than polling)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
                 applyTheme();
             }
-        }, 100);
+        });
+        window.addEventListener('pageshow', applyTheme);
     </script>
 
 </body>

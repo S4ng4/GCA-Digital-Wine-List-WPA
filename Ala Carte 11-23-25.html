@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gran Caffè L'Aquila - Full Strategic Menu</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&display=swap');
 
         :root {
             --bg-paper: #FDFBF7;
@@ -447,9 +449,40 @@
             .menu-sheet { padding: 20px; }
             h1 { font-size: clamp(2rem, 5vw, 2.5rem); }
         }
+
+        /* Fixed Home Button */
+        .fixed-home-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.9) 0%, rgba(184, 134, 11, 0.9) 100%);
+            border: 2px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 175, 55, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .fixed-home-btn i {
+            font-size: 1.25rem;
+            color: #0a0a0a;
+        }
+        .fixed-home-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 1) 0%, rgba(184, 134, 11, 1) 100%);
+        }
     </style>
 </head>
 <body>
+    <!-- Fixed Home Button -->
+    <a href="./index.html" class="fixed-home-btn" aria-label="Back to Home">
+        <i class="fas fa-home"></i>
+    </a>
 
     <div class="menu-sheet">
         <header>
@@ -790,16 +823,13 @@
             }
         });
 
-        // Polling per verificare cambiamenti del tema (per la stessa scheda)
-        setInterval(function() {
-            const currentDayMode = localStorage.getItem('dayMode') === 'true';
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const expectedTheme = currentDayMode ? 'day' : 'night';
-            
-            if (currentTheme !== expectedTheme) {
+        // Re-apply theme when returning to the page (lighter than polling)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
                 applyTheme();
             }
-        }, 100);
+        });
+        window.addEventListener('pageshow', applyTheme);
     </script>
 
 </body>

@@ -14,6 +14,11 @@
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body class="hero-enhanced">
+    <!-- Fixed Home Button -->
+    <a href="./index.html" class="fixed-home-btn" aria-label="Back to Home">
+        <i class="fas fa-home"></i>
+    </a>
+
     <div class="luxury-container">
         <header class="luxury-header">
             <div class="header-content">
@@ -23,7 +28,10 @@
                 </a>
                 <div class="logo-container">
                     <div class="luxury-logo small has-image">
-                        <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="logo-image">
+                        <picture>
+                            <source srcset="./image/gcaLogo.webp" type="image/webp">
+                            <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="logo-image" decoding="async">
+                        </picture>
                     </div>
                     <h1 class="luxury-title medium">GRAN CAFFÈ L'AQUILA</h1>
                     <p class="luxury-subtitle medium">present</p>

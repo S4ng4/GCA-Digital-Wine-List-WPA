@@ -13,7 +13,7 @@
             --gold: #D4AF37;
             --gold-light: #F4CF67;
             --dark-gold: #B8860B;
-            --black: #0A0A0A;
+            --black: #0E0E0E;
             --charcoal: #1A1A1A;
             --ivory: #F5F5F0;
             --cream: #F8F8F0;
@@ -1708,6 +1708,11 @@
     </style>
 </head>
 <body class="hero-enhanced">
+    <!-- Fixed Home Button -->
+    <a href="./index.html" class="fixed-home-btn" aria-label="Back to Home">
+        <i class="fas fa-home"></i>
+    </a>
+
     <div class="luxury-container">
         <!-- Top Bar -->
         <div class="wine-details-top-bar">
@@ -1715,7 +1720,10 @@
                 <i class="fas fa-chevron-left"></i>
             </a>
             <div class="wine-details-logo" onclick="window.location.href='./index.html'">
-                <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="wine-details-logo-image">
+                <picture>
+                    <source srcset="./image/gcaLogo.webp" type="image/webp">
+                    <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="wine-details-logo-image" decoding="async">
+                </picture>
             </div>
             <h1 class="wine-details-top-title">WINE DETAILS</h1>
             <button class="wine-details-share-btn" id="shareWineBtnTop">
@@ -1735,7 +1743,7 @@
                     </div>
                     <div class="wine-image" id="wineImageContainer">
                         <i class="fas fa-wine-bottle wine-bottle" id="wineBottleIcon"></i>
-                        <img id="wineBottleImage" src="" alt="Wine bottle" style="display: none;">
+                        <img id="wineBottleImage" src="" alt="Wine bottle" style="display: none;" loading="lazy" decoding="async">
                     </div>
                 </div>
 
@@ -1793,7 +1801,10 @@
                                 <div class="wine-lab-content">
                                     <div class="wine-lab-section">
                                         <div class="wine-lab-logo-bg">
-                                            <img src="./image/gcaLogo.png" alt="GCA logo">
+                                            <picture>
+                                                <source srcset="./image/gcaLogo.webp" type="image/webp">
+                                                <img src="./image/gcaLogo.png" alt="GCA logo" loading="lazy" decoding="async">
+                                            </picture>
                                         </div>
                                         <div class="wine-lab-section-body">
                                             <h3 class="wine-lab-editable" data-field="fullWineName">Wine Name NV</h3>
@@ -1839,7 +1850,10 @@
 
                                     <div class="wine-lab-section">
                                         <div class="wine-lab-logo-bg">
-                                            <img src="./image/gcaLogo.png" alt="GCA logo">
+                                            <picture>
+                                                <source srcset="./image/gcaLogo.webp" type="image/webp">
+                                                <img src="./image/gcaLogo.png" alt="GCA logo" loading="lazy" decoding="async">
+                                            </picture>
                                         </div>
                                         <div class="wine-lab-section-body">
                                             <h3 class="wine-lab-chart-title">Organoleptic Profile</h3>
@@ -1990,7 +2004,10 @@
 
                                     <div class="wine-lab-section">
                                         <div class="wine-lab-logo-bg">
-                                            <img src="./image/gcaLogo.png" alt="GCA logo">
+                                            <picture>
+                                                <source srcset="./image/gcaLogo.webp" type="image/webp">
+                                                <img src="./image/gcaLogo.png" alt="GCA logo" loading="lazy" decoding="async">
+                                            </picture>
                                         </div>
                                         <div class="wine-lab-section-body">
                                             <h3 class="wine-lab-chart-title">Tasting Notes</h3>
@@ -2129,16 +2146,13 @@
             }
         });
 
-        // Polling per verificare cambiamenti del tema
-        setInterval(function() {
-            const currentDayMode = localStorage.getItem('dayMode') === 'true';
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const expectedTheme = currentDayMode ? 'day' : 'night';
-            
-            if (currentTheme !== expectedTheme) {
+        // Re-apply theme when returning to the page (lighter than polling)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
                 applyTheme();
             }
-        }, 100);
+        });
+        window.addEventListener('pageshow', applyTheme);
 
         // Share Modal functionality (handled by main.js ShareWineManager, but keeping as fallback)
         document.addEventListener('DOMContentLoaded', () => {

@@ -3,8 +3,8 @@
  * Handles caching for offline functionality
  */
 
-const CACHE_NAME = 'gca-wine-list-v1';
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_NAME = 'gca-wine-list-v2';
+const CACHE_VERSION = 'v1.1.0';
 
 // Core assets to cache immediately on install
 const CORE_ASSETS = [
@@ -22,26 +22,39 @@ const PAGE_ASSETS = [
   '/wines.html',
   '/wine-map.html',
   '/wine-details.html',
+  '/wine-details-tlc11.html',
   '/WineByTheGlass.html',
   '/OurStory.html',
   '/regions.html',
   '/SparklingWineDoc.html',
   '/wine-comparison.html',
+  '/wine_manager.html',
   '/404.html'
 ];
 
 // Images to cache
 const IMAGE_ASSETS = [
   '/image/gcaLogo.png',
+  '/image/gcaLogo.webp',
   '/image/gcaLogoWall.jpeg',
+  '/image/gcaLogoWall.webp',
   '/image/logoFull.svg',
   '/image/secondFloor.png',
+  '/image/secondFloor.webp',
+  '/image/OldGca.jpg',
+  '/image/OldGca.webp',
   '/image/gl00.png',
+  '/image/gl00.webp',
   '/image/glArancione.png',
+  '/image/glArancione.webp',
   '/image/glassRed.png',
+  '/image/glassRed.webp',
   '/image/glassWhite.png',
+  '/image/glassWhite.webp',
   '/image/glRose.png',
+  '/image/glRose.webp',
   '/image/glSparkling.png',
+  '/image/glSparkling.webp',
   '/image/Ancestral-PetNat.svg',
   '/image/Martinotti.svg',
   '/image/MetodoClassico.svg'
@@ -58,8 +71,7 @@ const DATA_ASSETS = [
 const CDN_RESOURCES = [
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css'
+  'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant:wght@300;400;500;600&display=swap'
 ];
 
 // Combine all local assets
@@ -256,8 +268,8 @@ function createOfflineResponse(request) {
           <style>
             body {
               font-family: 'Cormorant', Georgia, serif;
-              background: #0A0A0A;
-              color: #F5F5F0;
+              background: #0E0E0E;
+              color: #F2F2F2;
               display: flex;
               justify-content: center;
               align-items: center;

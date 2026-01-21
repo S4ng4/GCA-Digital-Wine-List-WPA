@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw
 import os
 
 # Configuration
-BACKGROUND_COLOR = (10, 10, 10, 255)  # #0A0A0A (dark background)
+BACKGROUND_COLOR = (10, 10, 10, 255)  # #0E0E0E (dark background)
 OUTPUT_DIR = "image"
 SOURCE_LOGO = "image/gcaLogo.png"
 

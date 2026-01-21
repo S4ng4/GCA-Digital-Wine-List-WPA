@@ -13,7 +13,7 @@
             --gold: #D4AF37;
             --gold-light: #F4CF67;
             --dark-gold: #B8860B;
-            --black: #0A0A0A;
+            --black: #0E0E0E;
             --charcoal: #1A1A1A;
             --ivory: #F5F5F0;
             --cream: #F8F8F0;
@@ -823,6 +823,11 @@
     </style>
 </head>
 <body>
+    <!-- Fixed Home Button -->
+    <a href="./index.html" class="fixed-home-btn" aria-label="Back to Home">
+        <i class="fas fa-home"></i>
+    </a>
+
     <!-- Mobile Menu Overlay -->
     <div class="mobile-overlay" id="mobileOverlay"></div>
 
@@ -870,7 +875,10 @@
                 <i class="fas fa-chevron-left"></i>
             </a>
             <div class="comparison-logo" onclick="window.location.href='./index.html'">
-                <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="comparison-logo-image">
+                <picture>
+                    <source srcset="./image/gcaLogo.webp" type="image/webp">
+                    <img src="./image/gcaLogo.png" alt="Gran Caffè L'Aquila Logo" class="comparison-logo-image" decoding="async">
+                </picture>
             </div>
             <h1 class="comparison-top-title">WINE COMPARISON</h1>
             <button class="comparison-reset-btn" id="resetBtn" title="Reset Comparison">
@@ -1175,7 +1183,7 @@
 
                 resultsContainer.innerHTML = wines.map(wine => {
                     const imageHtml = wine.bottle_image_url 
-                        ? `<img src="${wine.bottle_image_url}" alt="${wine.wine_name}" class="search-result-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`
+                        ? `<img src="${wine.bottle_image_url}" alt="${wine.wine_name}" class="search-result-image" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`
                         : '';
                     const iconHtml = wine.bottle_image_url 
                         ? `<i class="fas fa-wine-bottle search-result-icon" style="display: none;"></i>`
@@ -1230,7 +1238,7 @@
                 card.style.display = 'flex';
 
                 const imageHtml = wine.bottle_image_url
-                    ? `<img src="${wine.bottle_image_url}" alt="${wine.wine_name}" class="wine-card-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`
+                    ? `<img src="${wine.bottle_image_url}" alt="${wine.wine_name}" class="wine-card-image" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`
                     : '';
                 const iconHtml = wine.bottle_image_url
                     ? `<i class="fas fa-wine-bottle wine-card-icon" style="display: none;"></i>`
@@ -1344,7 +1352,7 @@
                     <div class="comparison-wine">
                         <div class="comparison-wine-header">
                             ${wine1.bottle_image_url 
-                                ? `<img src="${wine1.bottle_image_url}" alt="${wine1.wine_name}" class="comparison-wine-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`
+                                ? `<img src="${wine1.bottle_image_url}" alt="${wine1.wine_name}" class="comparison-wine-image" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`
                                 : ''}
                             ${wine1.bottle_image_url 
                                 ? `<i class="fas fa-wine-bottle comparison-wine-icon" style="display: none;"></i>`
@@ -1374,7 +1382,7 @@
                     <div class="comparison-wine">
                         <div class="comparison-wine-header">
                             ${wine2.bottle_image_url 
-                                ? `<img src="${wine2.bottle_image_url}" alt="${wine2.wine_name}" class="comparison-wine-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`
+                                ? `<img src="${wine2.bottle_image_url}" alt="${wine2.wine_name}" class="comparison-wine-image" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`
                                 : ''}
                             ${wine2.bottle_image_url 
                                 ? `<i class="fas fa-wine-bottle comparison-wine-icon" style="display: none;"></i>`

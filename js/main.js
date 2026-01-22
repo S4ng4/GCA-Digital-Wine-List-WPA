@@ -10116,7 +10116,7 @@ if (document.readyState === 'loading') {
 // Tablet-specific: Force zoom to 32 after page load with delay to ensure layout is stable
 // This ensures the map opens at zoom level 32 (scale 32) on tablet devices
 if (isTabletDevice) {
-    const forceTabletZoom = () => {
+    const forceTabletZoom = (source) => {
         // Wait for layout to stabilize (500ms delay as specified)
         setTimeout(() => {
             // Force desktop map to zoom 32
@@ -10143,9 +10143,9 @@ if (isTabletDevice) {
     
     // Run on DOMContentLoaded if not already loaded
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', forceTabletZoom);
+        document.addEventListener('DOMContentLoaded', () => forceTabletZoom('DOMContentLoaded'));
     } else {
-        forceTabletZoom();
+        forceTabletZoom('immediate');
     }
     
     // Also listen for window load to ensure everything is ready

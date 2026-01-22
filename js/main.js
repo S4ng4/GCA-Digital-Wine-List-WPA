@@ -3570,7 +3570,36 @@ let mobileGeoJsonLayer = null;
 let mobileSelectedRegion = null;
 let mobileCurrentWineType = null;
 
+// Tablet detection flag
+let isTabletDevice = false;
+
 /* ==================== GLOBAL HELPER FUNCTIONS ==================== */
+// Helper function to detect tablet devices
+function detectTabletDevice() {
+    // Check viewport dimensions (tablets typically have width >= 768px and <= 1366px)
+    const width = window.innerWidth || document.documentElement.clientWidth;
+    const height = window.innerHeight || document.documentElement.clientHeight;
+    const minDimension = Math.min(width, height);
+    const maxDimension = Math.max(width, height);
+    
+    // Tablet detection: width between 768-1366px and aspect ratio suggests tablet
+    const isTabletViewport = (width >= 768 && width <= 1366) || 
+                            (minDimension >= 600 && maxDimension <= 1366);
+    
+    // Check user agent for tablet indicators
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isTabletUA = /iPad|Android|Tablet|PlayBook|Silk/i.test(userAgent) && 
+                      !/Mobile|Phone/i.test(userAgent);
+    
+    // Check for touch capability (tablets have touch)
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Combined detection: viewport suggests tablet AND (UA suggests tablet OR has touch)
+    return isTabletViewport && (isTabletUA || (hasTouch && width >= 768));
+}
+
+// Initialize tablet detection
+isTabletDevice = detectTabletDevice();
 // Helper function to wait for wineApp to be ready
 function waitForWineApp(callback, maxWait = 10000) {
     if (window.wineApp && window.wineApp.wines && window.wineApp.wines.length > 0) {
@@ -4316,10 +4345,14 @@ function initInteractiveMap() {
             return;
         }
         // Initialize map with uniform touch/mouse interactions
+        // Set maxZoom based on device type (32 for tablets, 10 for others)
+        const desktopMaxZoom = isTabletDevice ? 32 : 10;
+        const initialZoom = isTabletDevice ? 32 : 6;
+        
         mapInstance = L.map('map', {
             zoomControl: true,
             minZoom: 5,
-            maxZoom: 10,
+            maxZoom: desktopMaxZoom,
             maxBounds: [[35.5, 5.0], [48.0, 20.0]],
             maxBoundsViscosity: 0.5, // Reduced for smoother panning
             tap: true, // Enable tap on touch devices
@@ -4333,12 +4366,13 @@ function initInteractiveMap() {
             inertiaDeceleration: 3000, // Deceleration rate for inertia
             inertiaMaxSpeed: 1500, // Max speed for inertia
             worldCopyJump: false // Prevent map from jumping when panning
-        }).setView([42.0, 12.5], 6); // Zoom ridotto per mostrare tutta l'Italia con label
+        }).setView([42.0, 12.5], initialZoom); // Zoom 32 for tablets, 6 for others
         
-        // Add tile layer with HTTPS tiles
+        // Add tile layer with HTTPS tiles - maxZoom 32+ for tablets
+        const tileMaxZoom = isTabletDevice ? 32 : 19;
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 19
+            maxZoom: tileMaxZoom
         }).addTo(mapInstance);
         
         function updateMobileMapHeight() {
@@ -4596,10 +4630,23 @@ function initInteractiveMap() {
                 // Add region labels for desktop
                 addDesktopRegionLabels(geojson);
                 
-                mapInstance.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20] });
+                // Only use fitBounds if not a tablet device (tablets should maintain zoom 32)
+                if (!isTabletDevice) {
+                    mapInstance.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20] });
+                }
                 // Store original zoom and center for restoration
                 originalMapZoom = mapInstance.getZoom();
                 originalMapCenter = mapInstance.getCenter();
+                
+                // Force zoom to 32 for tablets after a short delay to ensure layout is stable
+                if (isTabletDevice) {
+                    setTimeout(() => {
+                        if (mapInstance) {
+                            mapInstance.setZoom(32);
+                            mapInstance.invalidateSize();
+                        }
+                    }, 500);
+                }
                 
                 // Update map colors if wine type is selected (from URL or active card)
                 // Check for active wine card if no URL type is set
@@ -5364,10 +5411,14 @@ function initInteractiveMap() {
                     return;
                 }
                 try {
+                    // Set maxZoom based on device type (32 for tablets, 8 for mobile)
+                    const mobileMaxZoom = isTabletDevice ? 32 : 8;
+                    const mobileInitialZoom = isTabletDevice ? 32 : 6;
+                    
                     mobileMapInstance = L.map('mobileMap', {
                         zoomControl: true,
                         minZoom: 5,
-                        maxZoom: 8,
+                        maxZoom: mobileMaxZoom,
                         maxBounds: [[35.5, 5.0], [48.0, 20.0]],
                         maxBoundsViscosity: 0.5, // Reduced for smoother panning (matching desktop)
                         tap: true, // Enable tap on touch devices
@@ -5381,11 +5432,12 @@ function initInteractiveMap() {
                         inertiaDeceleration: 3000, // Deceleration rate for inertia (matching desktop)
                         inertiaMaxSpeed: 1500, // Max speed for inertia (matching desktop)
                         worldCopyJump: false // Prevent map from jumping when panning
-                    }).setView([42.0, 12.5], 6); // Stessa impostazione iniziale della mappa desktop
-                    // Add tile layer with dark theme
+                    }).setView([42.0, 12.5], mobileInitialZoom); // Zoom 32 for tablets, 6 for mobile
+                    // Add tile layer with dark theme - maxZoom 32+ for tablets
+                    const mobileTileMaxZoom = isTabletDevice ? 32 : 19;
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '© OpenStreetMap contributors',
-                        maxZoom: 19
+                        maxZoom: mobileTileMaxZoom
                     }).addTo(mobileMapInstance);
                     // Invalidate size after a short delay to ensure proper rendering
                     setTimeout(() => {
@@ -5507,14 +5559,24 @@ function initInteractiveMap() {
                             // Add region labels with connecting lines
                             addMobileRegionLabels(geojson);
                             
-                            // Fit bounds with more padding to show all regions better, with slight rotation
-                            const bounds = mobileGeoJsonLayer.getBounds();
-                            // Aumenta il padding per assicurarsi che tutte le regioni siano visibili
-                            mobileMapInstance.fitBounds(bounds, { padding: [80, 80] });
-                            // Applica la stessa impostazione iniziale della mappa desktop (translate3d(8795.66px, 6088.78px, 0px) scale(32))
-                            setTimeout(() => {
-                                mobileMapInstance.setView([42.0, 12.5], 6);
-                            }, 100);
+                            // Only use fitBounds if not a tablet device (tablets should maintain zoom 32)
+                            if (!isTabletDevice) {
+                                const bounds = mobileGeoJsonLayer.getBounds();
+                                // Aumenta il padding per assicurarsi che tutte le regioni siano visibili
+                                mobileMapInstance.fitBounds(bounds, { padding: [80, 80] });
+                                // Applica la stessa impostazione iniziale della mappa desktop
+                                setTimeout(() => {
+                                    mobileMapInstance.setView([42.0, 12.5], 6);
+                                }, 100);
+                            } else {
+                                // For tablets, force zoom to 32 after a short delay to ensure layout is stable
+                                setTimeout(() => {
+                                    if (mobileMapInstance) {
+                                        mobileMapInstance.setZoom(32);
+                                        mobileMapInstance.invalidateSize();
+                                    }
+                                }, 500);
+                            }
                             
                             // Invalidate size again after GeoJSON is added
                             setTimeout(() => {
@@ -7913,17 +7975,21 @@ function initInteractiveMap() {
                     // Using fitBounds with minimal padding to zoom in as much as possible
                     // Then optionally increase zoom level further
                     setTimeout(() => {
+                        // For tablets, use higher maxZoom (32), for others use 8
+                        const maxZoomForRegion = isTabletDevice ? 32 : 8;
+                        
                         // First, fit bounds with minimal padding for maximum zoom
                         mapInstance.fitBounds(bounds, { 
                             padding: [10, 10], // Minimal padding for maximum zoom
-                            maxZoom: 8 // Respect maxZoom limit
+                            maxZoom: maxZoomForRegion // Respect maxZoom limit (32 for tablets, 8 for others)
                         });
                         
                         // Then increase zoom level further (almost double)
-                        // If current zoom is 6, we want ~11-12, but maxZoom is 8
-                        // So we'll set zoom to maxZoom (8) which is the maximum allowed
+                        // For tablets, allow zooming up to 32, for others cap at 8
                         const currentZoom = mapInstance.getZoom();
-                        const targetZoom = Math.min(8, currentZoom * 1.8); // Almost double, capped at maxZoom
+                        const targetZoom = isTabletDevice 
+                            ? Math.min(32, currentZoom * 1.8) // For tablets, allow up to 32
+                            : Math.min(8, currentZoom * 1.8); // For others, cap at 8
                         
                         if (targetZoom > currentZoom) {
                             mapInstance.setZoom(targetZoom, {
@@ -10047,3 +10113,52 @@ if (document.readyState === 'loading') {
     initInteractiveMap();
 }
 
+// Tablet-specific: Force zoom to 32 after page load with delay to ensure layout is stable
+// This ensures the map opens at zoom level 32 (scale 32) on tablet devices
+if (isTabletDevice) {
+    const forceTabletZoom = () => {
+        // Wait for layout to stabilize (500ms delay as specified)
+        setTimeout(() => {
+            // Force desktop map to zoom 32
+            if (mapInstance) {
+                const currentZoom = mapInstance.getZoom();
+                if (currentZoom !== 32) {
+                    mapInstance.setZoom(32);
+                    mapInstance.invalidateSize();
+                    console.log('📱 Tablet: Forced desktop map zoom to 32');
+                }
+            }
+            
+            // Force mobile map to zoom 32
+            if (mobileMapInstance) {
+                const currentMobileZoom = mobileMapInstance.getZoom();
+                if (currentMobileZoom !== 32) {
+                    mobileMapInstance.setZoom(32);
+                    mobileMapInstance.invalidateSize();
+                    console.log('📱 Tablet: Forced mobile map zoom to 32');
+                }
+            }
+        }, 500);
+    };
+    
+    // Run on DOMContentLoaded if not already loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', forceTabletZoom);
+    } else {
+        forceTabletZoom();
+    }
+    
+    // Also listen for window load to ensure everything is ready
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            if (mapInstance && mapInstance.getZoom() !== 32) {
+                mapInstance.setZoom(32);
+                mapInstance.invalidateSize();
+            }
+            if (mobileMapInstance && mobileMapInstance.getZoom() !== 32) {
+                mobileMapInstance.setZoom(32);
+                mobileMapInstance.invalidateSize();
+            }
+        }, 500);
+    });
+}
